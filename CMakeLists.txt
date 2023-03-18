@@ -275,12 +275,12 @@ if(DPDK_NEEDED STREQUAL "true")
   message(STATUS "DPDK needed to build eRPC")
 
   message(STATUS "DPDK for Linux")
-  find_library(DPDK_LIB dpdk)
-  if(NOT DPDK_LIB)
-    message(FATAL_ERROR "DPDK library not found")
-  endif()
+  #find_library(DPDK_LIB dpdk)
+  #if(NOT DPDK_LIB)
+  #  message(FATAL_ERROR "DPDK library not found")
+  #endif()
 
-  set(LIBRARIES ${LIBRARIES} -Wl,--whole-archive dpdk -Wl,--no-whole-archive numa dl ibverbs mlx4 mlx5)
+  set(LIBRARIES ${LIBRARIES} -Wl,--whole-archive -Wl,--no-whole-archive numa dl ibverbs mlx5)
 
   # DPDK include directory. Locating rte_config.h does not work on some systems.
   # Example: it may be kept in /usr/include/x86_64-linux-gnu/, and symlinked
@@ -323,6 +323,8 @@ endif()
 # of liberpc. See the hello world example's Makefile for an example of
 # compiling with liberpc.
 add_executable(${APP} apps/${APP}/${APP}.cc ${APP_ADDITIONAL_SOURCES} ${SOURCES})
+add_dependencies(${APP} dpdk_ep)
+target_link_libraries(${APP} ${DPDK_LIBRARIES})
 
 if(PERF)
   target_compile_options(${APP} PRIVATE "-flto")
@@ -332,8 +334,12 @@ target_link_libraries(${APP} ${LIBRARIES})
 # Compile hello_world apps
 add_executable(hello_server hello_world/server.cc)
 target_link_libraries(hello_server erpc ${LIBRARIES})
+add_dependencies(hello_server dpdk_ep)
+target_link_libraries(hello_server ${DPDK_LIBRARIES})
 add_executable(hello_client hello_world/client.cc)
 target_link_libraries(hello_client erpc ${LIBRARIES})
+add_dependencies(hello_client dpdk_ep)
+target_link_libraries(hello_client ${DPDK_LIBRARIES})
 
 # Compile the tests
 if(TESTING)
