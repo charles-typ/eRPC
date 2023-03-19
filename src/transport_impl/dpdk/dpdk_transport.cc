@@ -3,6 +3,8 @@
 #include "dpdk_transport.h"
 #include <iomanip>
 #include <set>
+#include <iostream>
+#include <string>
 #include <stdexcept>
 #include "dpdk_externs.h"
 #include "util/huge_alloc.h"
@@ -298,6 +300,14 @@ uint32_t DpdkTransport::get_port_ipv4_addr(size_t phy_port) {
 
     uint32_t ret;
     memcpy(&ret, &mac.addr_bytes[2], sizeof(ret));
+    char buf[2048];
+    sprintf(buf, "MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
+                " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 " ",
+                mac.addr_bytes[0],
+                mac.addr_bytes[1], mac.addr_bytes[2], mac.addr_bytes[3],
+                mac.addr_bytes[4], mac.addr_bytes[5]);
+    std::cout << std::string(buf);
+
     return ret;
   }
 #endif
