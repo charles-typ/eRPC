@@ -332,14 +332,16 @@ endif()
 target_link_libraries(${APP} ${LIBRARIES})
 
 # Compile hello_world apps
-add_executable(hello_server hello_world/server.cc)
-target_link_libraries(hello_server erpc ${LIBRARIES})
-add_dependencies(hello_server dpdk_ep)
-target_link_libraries(hello_server ${DPDK_LIBRARIES})
-add_executable(hello_client hello_world/client.cc)
-target_link_libraries(hello_client erpc ${LIBRARIES})
-add_dependencies(hello_client dpdk_ep)
-target_link_libraries(hello_client ${DPDK_LIBRARIES})
+#add_executable(hello_server hello_world/server.cc)
+#target_link_libraries(hello_server erpc ${LIBRARIES})
+#add_dependencies(hello_server dpdk_ep)
+#target_link_libraries(hello_server ${DPDK_LIBRARIES})
+#add_executable(hello_client hello_world/client.cc)
+#target_link_libraries(hello_client erpc ${LIBRARIES})
+#add_dependencies(hello_client dpdk_ep)
+#target_link_libraries(hello_client ${DPDK_LIBRARIES})
+
+add_subdirectory(hello_world)
 
 # Compile the tests
 if(TESTING)
