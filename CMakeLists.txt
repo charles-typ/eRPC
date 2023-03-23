@@ -322,7 +322,15 @@ endif()
 # Using link-time optimization sometimes requires building with sources instead
 # of liberpc. See the hello world example's Makefile for an example of
 # compiling with liberpc.
+
+# PULSE libraries
+
+add_subdirectory(libpc)
 add_executable(${APP} apps/${APP}/${APP}.cc ${APP_ADDITIONAL_SOURCES} ${SOURCES})
+message(STATUS "include dir: ${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(${APP} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libpc/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/inih
+  ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/concurrentqueue)
 add_dependencies(${APP} dpdk_ep)
 target_link_libraries(${APP} ${DPDK_LIBRARIES})
 
@@ -330,6 +338,7 @@ if(PERF)
   target_compile_options(${APP} PRIVATE "-flto")
 endif()
 target_link_libraries(${APP} ${LIBRARIES})
+target_link_libraries(${APP} pc)
 
 # Compile hello_world apps
 #add_executable(hello_server hello_world/server.cc)
@@ -428,3 +437,4 @@ if(TESTING)
     target_link_libraries(${test_name} erpc ${LIBRARIES})
   endforeach()
 endif()
+

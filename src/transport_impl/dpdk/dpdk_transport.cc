@@ -299,14 +299,17 @@ uint32_t DpdkTransport::get_port_ipv4_addr(size_t phy_port) {
     rte_eth_macaddr_get(phy_port, &mac);
 
     uint32_t ret;
-    memcpy(&ret, &mac.addr_bytes[2], sizeof(ret));
-    char buf[2048];
-    sprintf(buf, "MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
-                " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 " ",
-                mac.addr_bytes[0],
-                mac.addr_bytes[1], mac.addr_bytes[2], mac.addr_bytes[3],
-                mac.addr_bytes[4], mac.addr_bytes[5]);
-    std::cout << std::string(buf);
+    //rte_ether_unformat_addr("10.10.10.213", &(ret));
+    //inet_pton(AF_INET, "10.10.10.213", &(ret));
+    inet_pton(AF_INET, "213.10.10.10", &(ret));
+    //memcpy(&ret, &mac.addr_bytes[2], sizeof(ret));
+    //char buf[2048];
+    //sprintf(buf, "MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
+    //            " %02" PRIx8 " %02" PRIx8 " %02" PRIx8 " ",
+    //            mac.addr_bytes[0],
+    //            mac.addr_bytes[1], mac.addr_bytes[2], mac.addr_bytes[3],
+    //            mac.addr_bytes[4], mac.addr_bytes[5]);
+    //std::cout << std::string(buf);
 
     return ret;
   }

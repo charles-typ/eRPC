@@ -75,6 +75,7 @@ void DpdkTransport::tx_burst(const tx_burst_item_t *tx_burst_arr,
         frame_header_to_string(&pkthdr->headroom_[0]).c_str());
   }
 
+  //ERPC_INFO("Sending out packet here at port: %d, qp: %lu, num_pkts: %lu\n", phy_port_, qp_id_, num_pkts);
   size_t nb_tx_new = rte_eth_tx_burst(phy_port_, qp_id_, tx_mbufs, num_pkts);
   if (unlikely(nb_tx_new != num_pkts)) {
     size_t retry_count = 0;
