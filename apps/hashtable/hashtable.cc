@@ -11,16 +11,24 @@
 #include "pc/config.h"
 #include "pc/utils/logger.h"
 #include "pc/datastructure/hashtable.h"
+#include "pc/worker/rpc_worker.h"
+#include "concurrentqueue.h"
 
+using namespace pc;
 using namespace pc::utils;
 using namespace pc::datastructure;
+using namespace pc::worker;
+using namespace pc::parser;
 
 
 static constexpr size_t kAppEvLoopMs = 1000;  // Duration of event loop
 static constexpr bool kAppVerbose = false;    // Print debug info on datapath
 static constexpr size_t kAppReqType = 1;      // eRPC request type
-static constexpr size_t kAppMinReqSize = 64;
-static constexpr size_t kAppMaxReqSize = 1024;
+static constexpr size_t kAppMaxWindowSize = 32;  // Max pending reqs per client
+static constexpr size_t kAppReqSize = 40;
+static constexpr size_t kAppRespSize = 40;
+
+static RpcParse input_parser;
 
 // Precision factor for latency measurement
 static constexpr double kAppLatFac = erpc::kIsAzure ? 1.0 : 10.0;
@@ -33,7 +41,16 @@ DEFINE_uint64(resp_size, 8, "Size of the server's RPC response in bytes");
 
 class ServerContext : public BasicAppContext {
  public:
-  erpc::FastRand fast_rand_;
+  // Data structure 
+  hashtable::HashTable ht;
+  // Workers
+  moodycamel::ConcurrentQueue<Request> request_q;
+  moodycamel::ConcurrentQueue<Response> response_q;
+  std::vector<std::unique_ptr<RpcWorker>> worker_set;
+  // Tracking
+  size_t num_resps = 0;
+  // Buffer
+  erpc::MsgBuffer req_msgbuf_, resp_msgbuf_;
 };
 
 class ClientContext : public BasicAppContext {
@@ -42,16 +59,15 @@ class ClientContext : public BasicAppContext {
   static constexpr int64_t kLatencyPrecision = 2;  // Two significant digits
 
  public:
+  // Tracking
+  size_t num_reqs = 0;
+
   size_t start_tsc_;
   size_t req_size_;  // Between kAppMinReqSize and kAppMaxReqSize
   erpc::MsgBuffer req_msgbuf_, resp_msgbuf_;
   hdr_histogram *latency_hist_;
   size_t latency_samples_ = 0;
   size_t latency_samples_prev_ = 0;
-
-  // If true, the client doubles its request size (up to kAppMaxReqSize) when
-  // issuing the next request, and resets this flag to false
-  bool double_req_size_ = false;
 
   ClientContext() {
     int ret = hdr_init(kMinLatencyMicros, kMaxLatencyMicros, kLatencyPrecision,
@@ -66,18 +82,43 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
   auto *c = static_cast<ServerContext *>(_context);
   erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_handle->pre_resp_msgbuf_,
                                                  FLAGS_resp_size);
-  // erpc::nano_sleep((c->fast_rand_.next_u32() % 5) * 1000 * 1000, 3.0);
+
+  const erpc::MsgBuffer *req_msgbuf = req_handle->get_req_msgbuf();
+  //size_t req_size = req_msgbuf->get_data_size();
+  const Request *req = reinterpret_cast<const Request*>(req_msgbuf->buf_);
+
+  //uint8_t key_copy[sizeof(hashtable::key_type)];  // mti->get() modifies key
+  hashtable::key_type key_copy;
+  memcpy(&key_copy, &(req->key), sizeof(hashtable::key_type));
+
+  auto *resp =
+      reinterpret_cast<Response *>(req_handle->pre_resp_msgbuf_.buf_);
+  auto result =  c->ht.find(key_copy); // TODO avoid data copy here
+  //const bool success = c->ht.find_inline(key_copy, resp->result); // TODO avoid data copy here
+  memcpy(&(resp->result), &result, sizeof(Response::result));
   c->rpc_->enqueue_response(req_handle, &req_handle->pre_resp_msgbuf_);
 }
 
 void server_func(erpc::Nexus *nexus) {
-  printf("Latency: Running server, process ID %zu\n", FLAGS_process_id);
+  printf("Hash table: Running server, process ID %zu\n", FLAGS_process_id);
+
   std::vector<size_t> port_vec = flags_get_numa_ports(FLAGS_numa_node);
   uint8_t phy_port = port_vec.at(0);
 
   ServerContext c;
+
   erpc::Rpc<erpc::CTransport> rpc(nexus, static_cast<void *>(&c), 0 /* tid */,
                                   basic_sm_handler, phy_port);
+
+  // Setup hashtable
+  std::ifstream data_stream(std::string("/var/data/ycsbc-key-test"));
+  input_parser.read_all_keys(data_stream, 1); //FIXME num_keys
+  for(size_t i = 0; i < 1; i++) {  //FIXME num_keys
+    std::string value = gen_random(7); //FIXME check this size
+    c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
+
+  }
+
   rpc.set_pre_resp_msgbuf_size(FLAGS_resp_size);
   c.rpc_ = &rpc;
 
@@ -107,16 +148,14 @@ void connect_sessions(ClientContext &c) {
 
 void app_cont_func(void *, void *);
 inline void send_req(ClientContext &c) {
-  if (c.double_req_size_) {
-    c.double_req_size_ = false;
-    c.req_size_ *= 2;
-    if (c.req_size_ > kAppMaxReqSize) c.req_size_ = kAppMinReqSize;
-
-    c.rpc_->resize_msg_buffer(&c.req_msgbuf_, c.req_size_);
-    c.rpc_->resize_msg_buffer(&c.resp_msgbuf_, FLAGS_resp_size);
-  }
-
+  c.rpc_->resize_msg_buffer(&c.req_msgbuf_, c.req_size_);
+  c.rpc_->resize_msg_buffer(&c.resp_msgbuf_, FLAGS_resp_size);
   c.start_tsc_ = erpc::rdtsc();
+  erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_;
+  Request req;
+  req.key = input_parser.all_keys[c.num_reqs];
+  *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
+
   const size_t server_id = c.fastrand_.next_u32() % FLAGS_num_server_processes;
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
                           &c.req_msgbuf_, &c.resp_msgbuf_, app_cont_func,
@@ -125,6 +164,7 @@ inline void send_req(ClientContext &c) {
     printf("Latency: Sending request of size %zu bytes to server #%zu\n",
            c.req_msgbuf_.get_data_size(), server_id);
   }
+  c.num_reqs++;
 }
 
 void app_cont_func(void *_context, void *) {
@@ -148,6 +188,10 @@ void app_cont_func(void *_context, void *) {
 
 void client_func(erpc::Nexus *nexus) {
   printf("Latency: Running client, process ID %zu\n", FLAGS_process_id);
+  
+  std::ifstream query_stream(std::string("/var/data/ycsbc-query-1-test"));
+  input_parser.read_all_query(query_stream, 1); //FIXME num_queries
+
   std::vector<size_t> port_vec = flags_get_numa_ports(FLAGS_numa_node);
   uint8_t phy_port = port_vec.at(0);
 
@@ -157,10 +201,9 @@ void client_func(erpc::Nexus *nexus) {
 
   rpc.retry_connect_on_invalid_rpc_id_ = true;
   c.rpc_ = &rpc;
-  c.req_size_ = kAppMinReqSize;
 
-  c.req_msgbuf_ = rpc.alloc_msg_buffer_or_die(kAppMaxReqSize);
-  c.resp_msgbuf_ = rpc.alloc_msg_buffer_or_die(FLAGS_resp_size);
+  c.req_msgbuf_ = rpc.alloc_msg_buffer_or_die(kAppReqSize);
+  c.resp_msgbuf_ = rpc.alloc_msg_buffer_or_die(kAppRespSize);
 
   connect_sessions(c);
 
@@ -208,7 +251,6 @@ void client_func(erpc::Nexus *nexus) {
     }
 
     c.latency_samples_prev_ = c.latency_samples_;
-    c.double_req_size_ = true;
   }
 }
 
@@ -220,6 +262,17 @@ int main(int argc, char **argv) {
   erpc::Nexus nexus(erpc::get_uri_for_process(FLAGS_process_id),
                     FLAGS_numa_node, 0);
   nexus.register_req_func(kAppReqType, req_handler);
+
+  //if(FLAGS_process_id < FLAGS_num_server_processes) {
+  //  // Server function
+
+  //} else {
+  //  // Client function
+  //  //std::ifstream data_stream(std::string("/var/data/ycsbc-key-1-blade"));
+  //  //parser.read_all_keys(data_stream, num_keys);
+  //  //std::ifstream query_stream(std::string("/var/data/ycsbc-query-1-blade"));
+  //  //parser.read_all_queries(query_stream, num_queries);
+  //}
 
   auto t = std::thread(
       FLAGS_process_id < FLAGS_num_server_processes ? server_func : client_func,

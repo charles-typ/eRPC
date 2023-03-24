@@ -237,3 +237,20 @@ void ping_all_blocking(BasicAppContext &c) {
     }
   }
 }
+
+static inline std::string gen_random(const long unsigned int len)
+{
+  static const char alphanum[] =
+      "0123456789"
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "abcdefghijklmnopqrstuvwxyz";
+  std::string tmp_s;
+  tmp_s.reserve(len);
+
+  for (long unsigned int i = 0; i < len; ++i)
+  {
+    tmp_s += alphanum[static_cast<long unsigned int>(rand()) % (sizeof(alphanum) - 1)];
+  }
+
+  return tmp_s;
+}
