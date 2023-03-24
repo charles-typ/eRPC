@@ -194,7 +194,7 @@ void app_cont_func(void *_context, void *) {
 void client_func(erpc::Nexus *nexus) {
   printf("Latency: Running client, process ID %zu\n", FLAGS_process_id);
   
-  std::ifstream query_stream(std::string("/var/data/ycsbc-query-1-test"));
+  std::ifstream query_stream(std::string("/var/data/ycsbc-query-test"));
   input_parser.read_all_query(query_stream, 1); //FIXME num_queries
   LOG(log_level::info) << "Load all queries";
 
