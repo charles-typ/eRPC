@@ -151,10 +151,11 @@ void app_cont_func(void *, void *);
 inline void send_req(ClientContext &c) {
   c.rpc_->resize_msg_buffer(&c.req_msgbuf_, kAppReqSize);
   c.rpc_->resize_msg_buffer(&c.resp_msgbuf_, kAppRespSize);
+  LOG(log_level::info) << "Resize buffers";
   c.start_tsc_ = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_;
   Request req;
-  req.key = input_parser.all_keys[c.num_reqs];
+  req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
 
   const size_t server_id = c.fastrand_.next_u32() % FLAGS_num_server_processes;
@@ -180,6 +181,7 @@ void app_cont_func(void *_context, void *) {
 
   const double req_lat_us =
       erpc::to_usec(erpc::rdtsc() - c->start_tsc_, c->rpc_->get_freq_ghz());
+  LOG(log_level::info) << "Latency is: " << req_lat_us << " microseconds" << std::endl;
 
   hdr_record_value(c->latency_hist_,
                    static_cast<int64_t>(req_lat_us * kAppLatFac));
