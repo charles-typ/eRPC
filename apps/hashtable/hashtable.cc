@@ -81,7 +81,7 @@ class ClientContext : public BasicAppContext {
 void req_handler(erpc::ReqHandle *req_handle, void *_context) {
   auto *c = static_cast<ServerContext *>(_context);
   erpc::Rpc<erpc::CTransport>::resize_msg_buffer(&req_handle->pre_resp_msgbuf_,
-                                                 FLAGS_resp_size);
+                                                 kAppRespSize);
 
   const erpc::MsgBuffer *req_msgbuf = req_handle->get_req_msgbuf();
   //size_t req_size = req_msgbuf->get_data_size();
@@ -113,13 +113,14 @@ void server_func(erpc::Nexus *nexus) {
   // Setup hashtable
   std::ifstream data_stream(std::string("/var/data/ycsbc-key-test"));
   input_parser.read_all_keys(data_stream, 1); //FIXME num_keys
+  LOG(log_level::info) << "Load all keys";
   for(size_t i = 0; i < 1; i++) {  //FIXME num_keys
     std::string value = gen_random(7); //FIXME check this size
     c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
-
   }
+  LOG(log_level::info) << "insert all keys";
 
-  rpc.set_pre_resp_msgbuf_size(FLAGS_resp_size);
+  rpc.set_pre_resp_msgbuf_size(kAppRespSize);
   c.rpc_ = &rpc;
 
   while (true) {
@@ -148,8 +149,8 @@ void connect_sessions(ClientContext &c) {
 
 void app_cont_func(void *, void *);
 inline void send_req(ClientContext &c) {
-  c.rpc_->resize_msg_buffer(&c.req_msgbuf_, c.req_size_);
-  c.rpc_->resize_msg_buffer(&c.resp_msgbuf_, FLAGS_resp_size);
+  c.rpc_->resize_msg_buffer(&c.req_msgbuf_, kAppReqSize);
+  c.rpc_->resize_msg_buffer(&c.resp_msgbuf_, kAppRespSize);
   c.start_tsc_ = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_;
   Request req;
@@ -157,6 +158,7 @@ inline void send_req(ClientContext &c) {
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
 
   const size_t server_id = c.fastrand_.next_u32() % FLAGS_num_server_processes;
+  LOG(log_level::info) << "Request enqueued";
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
                           &c.req_msgbuf_, &c.resp_msgbuf_, app_cont_func,
                           nullptr);
@@ -169,7 +171,7 @@ inline void send_req(ClientContext &c) {
 
 void app_cont_func(void *_context, void *) {
   auto *c = static_cast<ClientContext *>(_context);
-  assert(c->resp_msgbuf_.get_data_size() == FLAGS_resp_size);
+  assert(c->resp_msgbuf_.get_data_size() == kAppRespSize);
 
   if (kAppVerbose) {
     printf("Latency: Received response of size %zu bytes\n",
@@ -191,6 +193,7 @@ void client_func(erpc::Nexus *nexus) {
   
   std::ifstream query_stream(std::string("/var/data/ycsbc-query-1-test"));
   input_parser.read_all_query(query_stream, 1); //FIXME num_queries
+  LOG(log_level::info) << "Load all queries";
 
   std::vector<size_t> port_vec = flags_get_numa_ports(FLAGS_numa_node);
   uint8_t phy_port = port_vec.at(0);
