@@ -151,16 +151,16 @@ void app_cont_func(void *, void *);
 inline void send_req(ClientContext &c) {
   c.rpc_->resize_msg_buffer(&c.req_msgbuf_, kAppReqSize);
   c.rpc_->resize_msg_buffer(&c.resp_msgbuf_, kAppRespSize);
-  LOG(log_level::info) << "Resize buffers";
+  //LOG(log_level::info) << "Resize buffers";
   c.start_tsc_ = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_;
   Request req;
-  LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
+  //LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
   req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
 
   const size_t server_id = c.fastrand_.next_u32() % FLAGS_num_server_processes;
-  LOG(log_level::info) << "Request enqueued";
+  //LOG(log_level::info) << "Request enqueued";
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
                           &c.req_msgbuf_, &c.resp_msgbuf_, app_cont_func,
                           nullptr);
