@@ -8,6 +8,13 @@
 #include "util/autorun_helpers.h"
 #include "util/numautils.h"
 #include "pc/parser/rpc_parse.h"
+#include "pc/config.h"
+#include "pc/utils/logger.h"
+#include "pc/datastructure/hashtable.h"
+
+using namespace pc::utils;
+using namespace pc::datastructure;
+
 
 static constexpr size_t kAppEvLoopMs = 1000;  // Duration of event loop
 static constexpr bool kAppVerbose = false;    // Print debug info on datapath
@@ -206,7 +213,6 @@ void client_func(erpc::Nexus *nexus) {
 }
 
 int main(int argc, char **argv) {
-  printf("Latency: Welcome!");
   signal(SIGINT, ctrl_c_handler);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   erpc::rt_assert(FLAGS_numa_node <= 1, "Invalid NUMA node");
