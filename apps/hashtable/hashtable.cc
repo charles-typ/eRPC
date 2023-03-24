@@ -181,7 +181,7 @@ void app_cont_func(void *_context, void *) {
 
   const double req_lat_us =
       erpc::to_usec(erpc::rdtsc() - c->start_tsc_, c->rpc_->get_freq_ghz());
-  LOG(log_level::info) << "Latency is: " << req_lat_us << " microseconds" << std::endl;
+  LOG(log_level::info) << "Latency is: " << req_lat_us << " microseconds";
 
   hdr_record_value(c->latency_hist_,
                    static_cast<int64_t>(req_lat_us * kAppLatFac));
