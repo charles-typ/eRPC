@@ -155,6 +155,7 @@ inline void send_req(ClientContext &c) {
   c.start_tsc_ = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_;
   Request req;
+  LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
   req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
 
