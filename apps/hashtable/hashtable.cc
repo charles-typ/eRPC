@@ -224,7 +224,9 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
            c.req_msgbuf_[msgbuf_idx].get_data_size(), server_id);
   }
   c.num_reqs++;
-  //LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
+  if(c.num_reqs%1000 == 0) {
+    LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
+  }
   c.stat_tx_bytes_tot += FLAGS_req_size;
 }
 
