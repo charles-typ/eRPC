@@ -45,7 +45,7 @@ void Rpc<TTr>::run_event_loop_timeout_st(size_t timeout_ms) {
 
   while (true) {
     run_event_loop_do_one_st();  // Run at least once even if timeout_ms is 0
-    std::cout << ev_loop_tsc_ - start_tsc << std::endl;
+    std::cout << ev_loop_tsc_ - start_tsc << " " << timeout_tsc << std::endl;
     if (unlikely(ev_loop_tsc_ - start_tsc > timeout_tsc)) break;
   }
 }
