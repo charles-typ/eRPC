@@ -224,7 +224,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
            c.req_msgbuf_[msgbuf_idx].get_data_size(), server_id);
   }
   c.num_reqs++;
-  LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
+  //LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
   c.stat_tx_bytes_tot += FLAGS_req_size;
 }
 
@@ -307,6 +307,7 @@ void client_func(erpc::Nexus *nexus) {
   LOG(log_level::info) << "Start event loop";
 
   for (size_t i = 0; i < FLAGS_test_ms; i += kAppEvLoopMs) {
+    LOG(log_level::info) << "Into this iteration";
     rpc.run_event_loop(kAppEvLoopMs);
     if (unlikely(ctrl_c_pressed == 1)) break;
     if (c.session_num_vec_.size() == 0) continue;  // No stats to print
@@ -321,8 +322,10 @@ void client_func(erpc::Nexus *nexus) {
     stats.re_tx = c.rpc_->get_num_re_tx(c.session_num_vec_[0]);
     stats.rtt_50_us = timely_0->get_rtt_perc(0.50);
     stats.rtt_99_us = timely_0->get_rtt_perc(0.99);
+    LOG(log_level::info) << "Get stat";
 
     if (c.lat_vec.size() > 0) {
+      LOG(log_level::info) << "Sort here";
       std::sort(c.lat_vec.begin(), c.lat_vec.end());
       stats.rpc_50_us = c.lat_vec[c.lat_vec.size() * 0.50];
       stats.rpc_99_us = c.lat_vec[c.lat_vec.size() * 0.99];
@@ -343,6 +346,7 @@ void client_func(erpc::Nexus *nexus) {
         stats.tx_gbps, c.stat_tx_bytes_tot / FLAGS_req_size, stats.re_tx,
         stats.rtt_50_us, stats.rtt_99_us, stats.rpc_50_us, stats.rpc_99_us,
         stats.rpc_999_us, timely_0->get_rate_gbps(), erpc::kSessionCredits);
+    fflush(stdout);
 
     // Reset stats for next iteration
     c.stat_rx_bytes_tot = 0;
