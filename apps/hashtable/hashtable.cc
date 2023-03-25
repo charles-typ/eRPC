@@ -248,7 +248,7 @@ void app_cont_func(void *_context, void *_tag) {
 
   //const double req_lat_us =
   //    erpc::to_usec(erpc::rdtsc() - c->start_tsc_, c->rpc_->get_freq_ghz());
-  //LOG(log_level::info) << "Latency is: " << usec << " microseconds";
+  LOG(log_level::info) << "Latency is: " << usec << " microseconds";
   c->lat_vec.push_back(usec);
   c->stat_rx_bytes_tot += FLAGS_resp_size;
   //LOG(log_level::info) << "Sending out response";
