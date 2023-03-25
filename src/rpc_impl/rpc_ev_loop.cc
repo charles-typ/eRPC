@@ -1,4 +1,5 @@
 #include "rpc.h"
+#include <iostream>
 
 namespace erpc {
 
