@@ -196,7 +196,7 @@ void connect_sessions(ClientContext &c) {
     c.session_num_vec_.push_back(session_num);
 
     while (c.num_sm_resps_ != (i + 1)) {
-      LOG(log_level::info) << "Into this event loop";
+      //LOG(log_level::info) << "Into this event loop";
       c.rpc_->run_event_loop(kAppEvLoopMs);
       if (unlikely(ctrl_c_pressed == 1)) return;
     }
@@ -248,7 +248,7 @@ void app_cont_func(void *_context, void *_tag) {
 
   //const double req_lat_us =
   //    erpc::to_usec(erpc::rdtsc() - c->start_tsc_, c->rpc_->get_freq_ghz());
-  LOG(log_level::info) << "Latency is: " << usec << " microseconds";
+  //LOG(log_level::info) << "Latency is: " << usec << " microseconds";
   c->lat_vec.push_back(usec);
   c->stat_rx_bytes_tot += FLAGS_resp_size;
   //LOG(log_level::info) << "Sending out response";
@@ -310,32 +310,23 @@ void client_func(erpc::Nexus *nexus) {
   LOG(log_level::info) << "Start event loop";
 
   for (size_t i = 0; i < FLAGS_test_ms; i += kAppEvLoopMs) {
-    LOG(log_level::info) << "Into this iteration";
     rpc.run_event_loop(kAppEvLoopMs);
     if (unlikely(ctrl_c_pressed == 1)) break;
     if (c.session_num_vec_.size() == 0) continue;  // No stats to print
 
-    LOG(log_level::info) << "Checkpoint 1";
-    fflush(stdout);
     const double ns = c.tput_t0.get_ns();
     erpc::Timely *timely_0 = c.rpc_->get_timely(0);
-    LOG(log_level::info) << "Checkpoint 2";
-    fflush(stdout);
 
     // Publish stats
     auto &stats = c.app_stats[c.thread_id_];
     stats.rx_gbps = c.stat_rx_bytes_tot * 8 / ns;
     stats.tx_gbps = c.stat_tx_bytes_tot * 8 / ns;
     stats.re_tx = c.rpc_->get_num_re_tx(c.session_num_vec_[0]);
-    LOG(log_level::info) << "Checkpoint 3";
-    fflush(stdout);
     stats.rtt_50_us = timely_0->get_rtt_perc(0.50);
     stats.rtt_99_us = timely_0->get_rtt_perc(0.99);
-    LOG(log_level::info) << "Get stat";
-    fflush(stdout);
 
     if (c.lat_vec.size() > 0) {
-      LOG(log_level::info) << "Sort here";
+      //LOG(log_level::info) << "Sort here";
       std::sort(c.lat_vec.begin(), c.lat_vec.end());
       stats.rpc_50_us = c.lat_vec[c.lat_vec.size() * 0.50];
       stats.rpc_99_us = c.lat_vec[c.lat_vec.size() * 0.99];
