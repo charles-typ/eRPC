@@ -270,6 +270,7 @@ void client_func(erpc::Nexus *nexus) {
 
   rpc.retry_connect_on_invalid_rpc_id_ = true;
   c.rpc_ = &rpc;
+  c.app_stats = new struct app_stats_t;
 
   connect_sessions(c);
   LOG(log_level::info) << "Session connected ";
