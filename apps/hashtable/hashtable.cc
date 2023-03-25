@@ -297,9 +297,9 @@ void client_func(erpc::Nexus *nexus) {
   //    "99.9999th_us max_us [new samples, total_samples in distribution, "
   //    "total_time]\n");
 
-  //for (size_t msgbuf_idx = 0; msgbuf_idx < FLAGS_concurrency; msgbuf_idx++) {
-  //  send_req(c, msgbuf_idx);
-  //}
+  for (size_t msgbuf_idx = 0; msgbuf_idx < FLAGS_concurrency; msgbuf_idx++) {
+    send_req(c, msgbuf_idx);
+  }
 
   //send_req(c);
   c.tput_t0.reset();
