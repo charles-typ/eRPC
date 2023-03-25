@@ -168,12 +168,12 @@ void server_func(erpc::Nexus *nexus) {
   // Setup hashtable
   std::ifstream data_stream(std::string("/var/data/ycsbc-key-test"));
   input_parser.read_all_keys(data_stream, FLAGS_num_keys); //FIXME num_keys
-  //LOG(log_level::info) << "Load all keys";
+  LOG(log_level::info) << "Load all keys";
   for(size_t i = 0; i < FLAGS_num_keys; i++) {  //FIXME num_keys
     std::string value = gen_random(7); //FIXME check this size
     c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
   }
-  //LOG(log_level::info) << "insert all keys";
+  LOG(log_level::info) << "insert all keys";
 
   rpc.set_pre_resp_msgbuf_size(FLAGS_resp_size);
   c.rpc_ = &rpc;
@@ -210,7 +210,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   c.req_ts[msgbuf_idx] = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_[msgbuf_idx];
   Request req;
-  //LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
+  LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
   req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
 
@@ -218,7 +218,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
                           &c.req_msgbuf_[msgbuf_idx], &c.resp_msgbuf_[msgbuf_idx], app_cont_func,
                           reinterpret_cast<void*>(msgbuf_idx));
-  //LOG(log_level::info) << "Request enqueued";
+  LOG(log_level::info) << "Request enqueued";
   if (kAppVerbose) {
     printf("Latency: Sending request of size %zu bytes to server #%zu\n",
            c.req_msgbuf_[msgbuf_idx].get_data_size(), server_id);
@@ -244,7 +244,7 @@ void app_cont_func(void *_context, void *_tag) {
 
   //const double req_lat_us =
   //    erpc::to_usec(erpc::rdtsc() - c->start_tsc_, c->rpc_->get_freq_ghz());
-  //LOG(log_level::info) << "Latency is: " << req_lat_us << " microseconds";
+  LOG(log_level::info) << "Latency is: " << usec << " microseconds";
   c->lat_vec.push_back(usec);
   c->stat_rx_bytes_tot += FLAGS_resp_size;
   LOG(log_level::info) << "Sending out response";
@@ -261,7 +261,7 @@ void client_func(erpc::Nexus *nexus) {
   
   std::ifstream query_stream(std::string("/var/data/ycsbc-query-test"));
   input_parser.read_all_query(query_stream, FLAGS_num_queries); //FIXME num_queries
-  //LOG(log_level::info) << "Load all queries";
+  LOG(log_level::info) << "Load all queries";
 
   std::vector<size_t> port_vec = flags_get_numa_ports(FLAGS_numa_node);
   uint8_t phy_port = port_vec.at(0);
