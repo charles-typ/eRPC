@@ -150,7 +150,7 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
   memcpy(&(resp->result), &result, sizeof(Response::result));
   c->stat_rx_bytes_tot += FLAGS_req_size;
   c->stat_tx_bytes_tot += FLAGS_resp_size;
-  LOG(log_level::info) << "Receving requests and Sending out response";
+  //LOG(log_level::info) << "Receving requests and Sending out response";
   c->rpc_->enqueue_response(req_handle, &req_handle->pre_resp_msgbuf_);
 }
 
@@ -210,7 +210,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   c.req_ts[msgbuf_idx] = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_[msgbuf_idx];
   Request req;
-  LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
+  //LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
   req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
 
@@ -218,7 +218,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
                           &c.req_msgbuf_[msgbuf_idx], &c.resp_msgbuf_[msgbuf_idx], app_cont_func,
                           reinterpret_cast<void*>(msgbuf_idx));
-  LOG(log_level::info) << "Request enqueued";
+  //LOG(log_level::info) << "Request enqueued";
   if (kAppVerbose) {
     printf("Latency: Sending request of size %zu bytes to server #%zu\n",
            c.req_msgbuf_[msgbuf_idx].get_data_size(), server_id);
@@ -244,10 +244,10 @@ void app_cont_func(void *_context, void *_tag) {
 
   //const double req_lat_us =
   //    erpc::to_usec(erpc::rdtsc() - c->start_tsc_, c->rpc_->get_freq_ghz());
-  LOG(log_level::info) << "Latency is: " << usec << " microseconds";
+  //LOG(log_level::info) << "Latency is: " << usec << " microseconds";
   c->lat_vec.push_back(usec);
   c->stat_rx_bytes_tot += FLAGS_resp_size;
-  LOG(log_level::info) << "Sending out response";
+  //LOG(log_level::info) << "Sending out response";
 
   //hdr_record_value(c->latency_hist_,
   //                 static_cast<int64_t>(req_lat_us * kAppLatFac));
