@@ -205,19 +205,19 @@ void app_cont_func(void *, void *);
 inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   c.rpc_->resize_msg_buffer(&c.req_msgbuf_[msgbuf_idx], FLAGS_req_size);
   c.rpc_->resize_msg_buffer(&c.resp_msgbuf_[msgbuf_idx], FLAGS_resp_size);
-  //LOG(log_level::info) << "Resize buffers";
+  LOG(log_level::info) << "Resize buffers";
   c.req_ts[msgbuf_idx] = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_[msgbuf_idx];
   Request req;
-  //LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
+  LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
   req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
 
   const size_t server_id = c.fastrand_.next_u32() % FLAGS_num_server_processes;
-  //LOG(log_level::info) << "Request enqueued";
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
                           &c.req_msgbuf_[msgbuf_idx], &c.resp_msgbuf_[msgbuf_idx], app_cont_func,
                           reinterpret_cast<void*>(msgbuf_idx));
+  LOG(log_level::info) << "Request enqueued";
   if (kAppVerbose) {
     printf("Latency: Sending request of size %zu bytes to server #%zu\n",
            c.req_msgbuf_[msgbuf_idx].get_data_size(), server_id);
@@ -280,6 +280,7 @@ void client_func(erpc::Nexus *nexus) {
     // Fill the request regardless of kAppMemset. This is a one-time thing.
     //memset(c.req_msgbuf_[i].buf_, kAppDataByte, FLAGS_req_size);
   }
+  LOG(log_level::info) << "Finished initializing buffers";
 
   //c.req_msgbuf_ = rpc.alloc_msg_buffer_or_die(kAppReqSize);
   //c.resp_msgbuf_ = rpc.alloc_msg_buffer_or_die(kAppRespSize);
