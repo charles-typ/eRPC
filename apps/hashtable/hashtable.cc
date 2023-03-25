@@ -21,7 +21,7 @@ using namespace pc::worker;
 using namespace pc::parser;
 
 
-static constexpr size_t kAppEvLoopMs = 1000;  // Duration of event loop
+static constexpr size_t kAppEvLoopMs = 1;  // Duration of event loop
 static constexpr bool kAppVerbose = false;    // Print debug info on datapath
 static constexpr size_t kAppReqType = 1;      // eRPC request type
 static constexpr size_t kAppMaxWindowSize = 32;  // Max pending reqs per client
