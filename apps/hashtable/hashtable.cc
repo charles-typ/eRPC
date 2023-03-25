@@ -196,6 +196,7 @@ void connect_sessions(ClientContext &c) {
     c.session_num_vec_.push_back(session_num);
 
     while (c.num_sm_resps_ != (i + 1)) {
+      LOG(log_level::info) << "Into this event loop" << std::endl;
       c.rpc_->run_event_loop(kAppEvLoopMs);
       if (unlikely(ctrl_c_pressed == 1)) return;
     }
