@@ -166,7 +166,7 @@ void server_func(erpc::Nexus *nexus) {
   std::ifstream data_stream(std::string("/var/data/ycsbc-key-test"));
   input_parser.read_all_keys(data_stream, 1); //FIXME num_keys
   LOG(log_level::info) << "Load all keys";
-  for(size_t i = 0; i < 1; i++) {  //FIXME num_keys
+  for(size_t i = 0; i < 10000; i++) {  //FIXME num_keys
     std::string value = gen_random(7); //FIXME check this size
     c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
   }
@@ -256,7 +256,7 @@ void client_func(erpc::Nexus *nexus) {
   printf("Latency: Running client, process ID %zu\n", FLAGS_process_id);
   
   std::ifstream query_stream(std::string("/var/data/ycsbc-query-test"));
-  input_parser.read_all_query(query_stream, 1); //FIXME num_queries
+  input_parser.read_all_query(query_stream, 10000); //FIXME num_queries
   LOG(log_level::info) << "Load all queries";
 
   std::vector<size_t> port_vec = flags_get_numa_ports(FLAGS_numa_node);
