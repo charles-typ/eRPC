@@ -167,12 +167,12 @@ void server_func(erpc::Nexus *nexus) {
   // Setup hashtable
   std::ifstream data_stream(std::string("/var/data/ycsbc-key-test"));
   input_parser.read_all_keys(data_stream, FLAGS_num_keys); //FIXME num_keys
-  LOG(log_level::info) << "Load all keys";
+  //LOG(log_level::info) << "Load all keys";
   for(size_t i = 0; i < FLAGS_num_keys; i++) {  //FIXME num_keys
     std::string value = gen_random(7); //FIXME check this size
     c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
   }
-  LOG(log_level::info) << "insert all keys";
+  //LOG(log_level::info) << "insert all keys";
 
   rpc.set_pre_resp_msgbuf_size(FLAGS_resp_size);
   c.rpc_ = &rpc;
@@ -205,11 +205,11 @@ void app_cont_func(void *, void *);
 inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   c.rpc_->resize_msg_buffer(&c.req_msgbuf_[msgbuf_idx], FLAGS_req_size);
   c.rpc_->resize_msg_buffer(&c.resp_msgbuf_[msgbuf_idx], FLAGS_resp_size);
-  LOG(log_level::info) << "Resize buffers";
+  //LOG(log_level::info) << "Resize buffers";
   c.req_ts[msgbuf_idx] = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_[msgbuf_idx];
   Request req;
-  LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
+  //LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
   req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
 
@@ -217,7 +217,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
                           &c.req_msgbuf_[msgbuf_idx], &c.resp_msgbuf_[msgbuf_idx], app_cont_func,
                           reinterpret_cast<void*>(msgbuf_idx));
-  LOG(log_level::info) << "Request enqueued";
+  //LOG(log_level::info) << "Request enqueued";
   if (kAppVerbose) {
     printf("Latency: Sending request of size %zu bytes to server #%zu\n",
            c.req_msgbuf_[msgbuf_idx].get_data_size(), server_id);
@@ -259,7 +259,7 @@ void client_func(erpc::Nexus *nexus) {
   
   std::ifstream query_stream(std::string("/var/data/ycsbc-query-test"));
   input_parser.read_all_query(query_stream, FLAGS_num_queries); //FIXME num_queries
-  LOG(log_level::info) << "Load all queries";
+  //LOG(log_level::info) << "Load all queries";
 
   std::vector<size_t> port_vec = flags_get_numa_ports(FLAGS_numa_node);
   uint8_t phy_port = port_vec.at(0);
@@ -272,6 +272,7 @@ void client_func(erpc::Nexus *nexus) {
   c.rpc_ = &rpc;
 
   connect_sessions(c);
+  LOG(log_level::info) << "Session connected ";
 
   for (size_t i = 0; i < FLAGS_concurrency; i++) {
     c.req_msgbuf_[i] = c.rpc_->alloc_msg_buffer_or_die(FLAGS_req_size);
@@ -286,19 +287,20 @@ void client_func(erpc::Nexus *nexus) {
   //c.resp_msgbuf_ = rpc.alloc_msg_buffer_or_die(kAppRespSize);
 
 
-  printf("Latency: Process %zu: Session connected. Starting work.\n",
-         FLAGS_process_id);
-  printf(
-      "req_size median_us 5th_us 99th_us 99.9th_us 99.99th_us 99.999th_us "
-      "99.9999th_us max_us [new samples, total_samples in distribution, "
-      "total_time]\n");
+  //printf("Latency: Process %zu: Session connected. Starting work.\n",
+  //       FLAGS_process_id);
+  //printf(
+  //    "req_size median_us 5th_us 99th_us 99.9th_us 99.99th_us 99.999th_us "
+  //    "99.9999th_us max_us [new samples, total_samples in distribution, "
+  //    "total_time]\n");
 
-  for (size_t msgbuf_idx = 0; msgbuf_idx < FLAGS_concurrency; msgbuf_idx++) {
-    send_req(c, msgbuf_idx);
-  }
+  //for (size_t msgbuf_idx = 0; msgbuf_idx < FLAGS_concurrency; msgbuf_idx++) {
+  //  send_req(c, msgbuf_idx);
+  //}
 
   //send_req(c);
   c.tput_t0.reset();
+  LOG(log_level::info) << "Start event loop";
 
   for (size_t i = 0; i < FLAGS_test_ms; i += kAppEvLoopMs) {
     rpc.run_event_loop(kAppEvLoopMs);
