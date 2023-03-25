@@ -21,7 +21,7 @@ using namespace pc::worker;
 using namespace pc::parser;
 
 
-static constexpr size_t kAppEvLoopMs = 100;  // Duration of event loop
+static constexpr size_t kAppEvLoopMs = 1000;  // Duration of event loop
 static constexpr bool kAppVerbose = false;    // Print debug info on datapath
 static constexpr size_t kAppReqType = 1;      // eRPC request type
 static constexpr size_t kAppMaxWindowSize = 32;  // Max pending reqs per client
@@ -315,9 +315,11 @@ void client_func(erpc::Nexus *nexus) {
     if (c.session_num_vec_.size() == 0) continue;  // No stats to print
 
     LOG(log_level::info) << "Checkpoint 1";
+    fflush(stdout);
     const double ns = c.tput_t0.get_ns();
     erpc::Timely *timely_0 = c.rpc_->get_timely(0);
     LOG(log_level::info) << "Checkpoint 2";
+    fflush(stdout);
 
     // Publish stats
     auto &stats = c.app_stats[c.thread_id_];
@@ -325,9 +327,11 @@ void client_func(erpc::Nexus *nexus) {
     stats.tx_gbps = c.stat_tx_bytes_tot * 8 / ns;
     stats.re_tx = c.rpc_->get_num_re_tx(c.session_num_vec_[0]);
     LOG(log_level::info) << "Checkpoint 3";
+    fflush(stdout);
     stats.rtt_50_us = timely_0->get_rtt_perc(0.50);
     stats.rtt_99_us = timely_0->get_rtt_perc(0.99);
     LOG(log_level::info) << "Get stat";
+    fflush(stdout);
 
     if (c.lat_vec.size() > 0) {
       LOG(log_level::info) << "Sort here";
