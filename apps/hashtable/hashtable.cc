@@ -150,6 +150,7 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
   memcpy(&(resp->result), &result, sizeof(Response::result));
   c->stat_rx_bytes_tot += FLAGS_req_size;
   c->stat_tx_bytes_tot += FLAGS_resp_size;
+  LOG(log_level::info) << "Receving requests and Sending out response";
   c->rpc_->enqueue_response(req_handle, &req_handle->pre_resp_msgbuf_);
 }
 
@@ -246,6 +247,7 @@ void app_cont_func(void *_context, void *_tag) {
   //LOG(log_level::info) << "Latency is: " << req_lat_us << " microseconds";
   c->lat_vec.push_back(usec);
   c->stat_rx_bytes_tot += FLAGS_resp_size;
+  LOG(log_level::info) << "Sending out response";
 
   //hdr_record_value(c->latency_hist_,
   //                 static_cast<int64_t>(req_lat_us * kAppLatFac));
