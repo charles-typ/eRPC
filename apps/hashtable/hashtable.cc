@@ -312,14 +312,17 @@ void client_func(erpc::Nexus *nexus) {
     if (unlikely(ctrl_c_pressed == 1)) break;
     if (c.session_num_vec_.size() == 0) continue;  // No stats to print
 
+    LOG(log_level::info) << "Checkpoint 1";
     const double ns = c.tput_t0.get_ns();
     erpc::Timely *timely_0 = c.rpc_->get_timely(0);
+    LOG(log_level::info) << "Checkpoint 2";
 
     // Publish stats
     auto &stats = c.app_stats[c.thread_id_];
     stats.rx_gbps = c.stat_rx_bytes_tot * 8 / ns;
     stats.tx_gbps = c.stat_tx_bytes_tot * 8 / ns;
     stats.re_tx = c.rpc_->get_num_re_tx(c.session_num_vec_[0]);
+    LOG(log_level::info) << "Checkpoint 3";
     stats.rtt_50_us = timely_0->get_rtt_perc(0.50);
     stats.rtt_99_us = timely_0->get_rtt_perc(0.99);
     LOG(log_level::info) << "Get stat";
