@@ -41,6 +41,8 @@ DEFINE_uint64(num_server_processes, 1, "Number of server processes");
 DEFINE_uint64(resp_size, 8, "Size of the server's RPC response in bytes");
 DEFINE_uint64(req_size, 0, "Request data size");
 DEFINE_uint64(concurrency, 0, "Concurrent requests per thread");
+DEFINE_uint64(num_keys, 0, "Number of keys");
+DEFINE_uint64(num_queries, 0, "Number of queries");
 
 struct app_stats_t {
   double rx_gbps;
@@ -164,9 +166,9 @@ void server_func(erpc::Nexus *nexus) {
 
   // Setup hashtable
   std::ifstream data_stream(std::string("/var/data/ycsbc-key-test"));
-  input_parser.read_all_keys(data_stream, 1); //FIXME num_keys
+  input_parser.read_all_keys(data_stream, FLAGS_num_keys); //FIXME num_keys
   LOG(log_level::info) << "Load all keys";
-  for(size_t i = 0; i < 10000; i++) {  //FIXME num_keys
+  for(size_t i = 0; i < FLAGS_num_keys; i++) {  //FIXME num_keys
     std::string value = gen_random(7); //FIXME check this size
     c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
   }
@@ -256,7 +258,7 @@ void client_func(erpc::Nexus *nexus) {
   printf("Latency: Running client, process ID %zu\n", FLAGS_process_id);
   
   std::ifstream query_stream(std::string("/var/data/ycsbc-query-test"));
-  input_parser.read_all_query(query_stream, 10000); //FIXME num_queries
+  input_parser.read_all_query(query_stream, FLAGS_num_queries); //FIXME num_queries
   LOG(log_level::info) << "Load all queries";
 
   std::vector<size_t> port_vec = flags_get_numa_ports(FLAGS_numa_node);

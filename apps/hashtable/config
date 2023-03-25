@@ -6,3 +6,5 @@
 --numa_0_ports 0
 --numa_1_ports 0
 --concurrency 1
+--num_keys 10000
+--num_queries 10000
