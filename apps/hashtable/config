@@ -8,3 +8,5 @@
 --concurrency 1
 --num_keys 10000
 --num_queries 10000
+--data_filepath /var/data/ycsbc-key-test
+--query_filepath /var/data/ycsbc-query-test

@@ -35,6 +35,7 @@ static RpcParse input_parser;
 static constexpr double kAppLatFac = erpc::kIsAzure ? 1.0 : 10.0;
 
 volatile sig_atomic_t ctrl_c_pressed = 0;
+volatile sig_atomic_t experiment_finished = 0;
 void ctrl_c_handler(int) { ctrl_c_pressed = 1; }
 
 DEFINE_uint64(num_server_processes, 1, "Number of server processes");
@@ -43,6 +44,9 @@ DEFINE_uint64(req_size, 0, "Request data size");
 DEFINE_uint64(concurrency, 0, "Concurrent requests per thread");
 DEFINE_uint64(num_keys, 0, "Number of keys");
 DEFINE_uint64(num_queries, 0, "Number of queries");
+DEFINE_string(ip_address, "221.10.10.10", "IP address of the NIC");
+DEFINE_string(data_filepath, "/var/data/ycsbc-key-test", "Data file");
+DEFINE_string(query_filepath, "/var/data/ycsbc-query-test", "Query file");
 
 struct app_stats_t {
   double rx_gbps;
@@ -166,7 +170,7 @@ void server_func(erpc::Nexus *nexus) {
                                   basic_sm_handler, phy_port);
 
   // Setup hashtable
-  std::ifstream data_stream(std::string("/var/data/ycsbc-key-test"));
+  std::ifstream data_stream(FLAGS_data_filepath);
   input_parser.read_all_keys(data_stream, FLAGS_num_keys); //FIXME num_keys
   LOG(log_level::info) << "Load all keys";
   for(size_t i = 0; i < FLAGS_num_keys; i++) {  //FIXME num_keys
@@ -225,9 +229,12 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
            c.req_msgbuf_[msgbuf_idx].get_data_size(), server_id);
   }
   c.num_reqs++;
-  if(c.num_reqs%1000 == 0) {
-    LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
+  if(c.num_reqs >= FLAGS_num_queries) {
+    experiment_finished = 1;
   }
+  //if(c.num_reqs%1000 == 0) {
+  //  LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
+  //}
   c.stat_tx_bytes_tot += FLAGS_req_size;
 }
 
@@ -255,7 +262,7 @@ void app_cont_func(void *_context, void *_tag) {
 void client_func(erpc::Nexus *nexus) {
   printf("Latency: Running client, process ID %zu\n", FLAGS_process_id);
   
-  std::ifstream query_stream(std::string("/var/data/ycsbc-query-test"));
+  std::ifstream query_stream(FLAGS_query_filepath);
   input_parser.read_all_query(query_stream, FLAGS_num_queries); //FIXME num_queries
   LOG(log_level::info) << "Load all queries";
 
@@ -293,6 +300,7 @@ void client_func(erpc::Nexus *nexus) {
   for (size_t i = 0; i < FLAGS_test_ms; i += kAppEvLoopMs) {
     rpc.run_event_loop(kAppEvLoopMs);
     if (unlikely(ctrl_c_pressed == 1)) break;
+    if (unlikely(experiment_finished == 1)) break;
     if (c.session_num_vec_.size() == 0) continue;  // No stats to print
 
     const double ns = c.tput_t0.get_ns();
