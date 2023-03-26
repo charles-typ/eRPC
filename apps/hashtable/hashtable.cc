@@ -153,7 +153,8 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
   std::cout << "Key to find is: " << key_copy << std::endl;
   auto result =  c->ht.find(key_copy); // TODO avoid data copy here
   //const bool success = c->ht.find_inline(key_copy, resp->result); // TODO avoid data copy here
-  memcpy(&(resp->result), &result, sizeof(Response::result));
+  std::cout << "result is: " << (*result).second << std::endl;
+  memcpy(&(resp->result), &((*result).second), sizeof(Response::result));
   c->stat_rx_bytes_tot += FLAGS_req_size;
   c->stat_tx_bytes_tot += FLAGS_resp_size;
   //LOG(log_level::info) << "Receving requests and Sending out response";
