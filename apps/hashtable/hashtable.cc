@@ -236,6 +236,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   //  LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
   //}
   c.stat_tx_bytes_tot += FLAGS_req_size;
+  LOG(log_level::info) << "Number of request sent: " << c.num_reqs << " " << c.stat_tx_bytes_tot / FLAGS_req_size;
 }
 
 void app_cont_func(void *_context, void *_tag) {
