@@ -45,17 +45,18 @@ std::string get_dpdk_ip() {
 
                 ipaddress_human_readable_form = std::string(buffer);
             }
-	    in_addr_t addr;
-	    inet_pton(AF_INET, ipaddress_human_readable_form.c_str(), &addr);
-	    addr =
-    ((addr & 0xff000000) >> 24) |
-    ((addr & 0x00ff0000) >>  8) |
-    ((addr & 0x0000ff00) <<  8) |
-    ((addr & 0x000000ff) << 24);
-	    inet_ntop(AF_INET, &addr, &ipaddress_human_readable_form[0], sizeof(ipaddress_human_readable_form));
-	    if(ipaddress_human_readable_form.substr(ipaddress_human_readable_form.size() - 3) == ".10")
-            freeifaddrs(ptr_ifaddrs);
-            return ipaddress_human_readable_form;
+	        in_addr_t addr;
+	        inet_pton(AF_INET, ipaddress_human_readable_form.c_str(), &addr);
+	        addr =
+                ((addr & 0xff000000) >> 24) |
+                ((addr & 0x00ff0000) >>  8) |
+                ((addr & 0x0000ff00) <<  8) |
+                ((addr & 0x000000ff) << 24);
+	        inet_ntop(AF_INET, &addr, &ipaddress_human_readable_form[0], sizeof(ipaddress_human_readable_form));
+	        if(ipaddress_human_readable_form.substr(ipaddress_human_readable_form.size() - 3) == ".10") {
+                freeifaddrs(ptr_ifaddrs);
+                return ipaddress_human_readable_form;
+            }
         }
     }
     return "NULL";
