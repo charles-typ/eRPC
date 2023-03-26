@@ -303,6 +303,7 @@ uint32_t DpdkTransport::get_port_ipv4_addr(size_t phy_port) {
     //rte_ether_unformat_addr("10.10.10.213", &(ret));
     //inet_pton(AF_INET, "10.10.10.213", &(ret));
     inet_pton(AF_INET, get_dpdk_ip().c_str(), &(ret));
+    std::cout << "Ip address: " << get_dpdk_ip() << std::endl;
     //memcpy(&ret, &mac.addr_bytes[2], sizeof(ret));
     //char buf[2048];
     //sprintf(buf, "MAC: %02" PRIx8 " %02" PRIx8 " %02" PRIx8
