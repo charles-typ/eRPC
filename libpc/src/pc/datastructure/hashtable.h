@@ -85,6 +85,9 @@ namespace pc
         {
           return std::make_pair((*itr)->key, (*itr)->value);
         }
+        void* get_value() {
+          return &((*itr)->value);
+        }
       };
 
       class HashTableList
