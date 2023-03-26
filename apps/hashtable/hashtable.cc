@@ -28,6 +28,7 @@ static constexpr size_t kAppMaxWindowSize = 32;  // Max pending reqs per client
 static constexpr size_t kAppReqSize = 40;
 static constexpr size_t kAppRespSize = 40;
 static constexpr size_t kAppMaxConcurrency = 32; // Set outstanding request per thread
+static constexpr bool kAppVerifyCorrectness = false; // Set outstanding request per thread
 
 static RpcParse input_parser;
 
@@ -176,6 +177,7 @@ void server_func(erpc::Nexus *nexus) {
   for(size_t i = 0; i < FLAGS_num_keys; i++) {  //FIXME num_keys
     std::string value = gen_random(7); //FIXME check this size
     c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
+    std::cout << "Inserting key: " << input_parser.all_keys[i] << " value: " << value << std::endl;
   }
   LOG(log_level::info) << "insert all keys";
 
@@ -244,7 +246,9 @@ void app_cont_func(void *_context, void *_tag) {
   auto *c = static_cast<ClientContext *>(_context);
   auto msgbuf_idx = reinterpret_cast<size_t>(_tag);
   //const erpc::MsgBuffer &resp_msgbuf = c->req_msgbuf_[msgbuf_idx];
-  //assert(c->resp_msgbuf_.get_data_size() == kAppRespSize);
+  auto *resp =
+      reinterpret_cast<Response *>(c->resp_msgbuf_[msgbuf_idx].buf_);
+  std::cout << "Check this result: " << resp->result << std::endl;
 
   if (kAppVerbose) {
     printf("Latency: Received response of size %zu bytes\n",
