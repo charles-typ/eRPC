@@ -215,7 +215,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   c.req_ts[msgbuf_idx] = erpc::rdtsc();
   erpc::MsgBuffer &req_msgbuf = c.req_msgbuf_[msgbuf_idx];
   Request req;
-  LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
+  //LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
   req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
   if(c.num_reqs >= FLAGS_num_queries) {
@@ -237,7 +237,7 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   //  LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
   //}
   c.stat_tx_bytes_tot += FLAGS_req_size;
-  LOG(log_level::info) << "Number of request sent: " << c.num_reqs << " ";
+  //LOG(log_level::info) << "Number of request sent: " << c.num_reqs << " ";
 }
 
 void app_cont_func(void *_context, void *_tag) {
