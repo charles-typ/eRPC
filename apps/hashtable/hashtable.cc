@@ -246,16 +246,8 @@ void app_cont_func(void *_context, void *_tag) {
   double usec = erpc::to_usec(erpc::rdtsc() - c->req_ts[msgbuf_idx],
                               c->rpc_->get_freq_ghz());
 
-  //const double req_lat_us =
-  //    erpc::to_usec(erpc::rdtsc() - c->start_tsc_, c->rpc_->get_freq_ghz());
-  //LOG(log_level::info) << "Latency is: " << usec << " microseconds";
   c->lat_vec.push_back(usec);
   c->stat_rx_bytes_tot += FLAGS_resp_size;
-  //LOG(log_level::info) << "Sending out response";
-
-  //hdr_record_value(c->latency_hist_,
-  //                 static_cast<int64_t>(req_lat_us * kAppLatFac));
-  //c->latency_samples_++;
 
   send_req(*c, msgbuf_idx);
 }
@@ -289,17 +281,6 @@ void client_func(erpc::Nexus *nexus) {
     //memset(c.req_msgbuf_[i].buf_, kAppDataByte, FLAGS_req_size);
   }
   LOG(log_level::info) << "Finished initializing buffers";
-
-  //c.req_msgbuf_ = rpc.alloc_msg_buffer_or_die(kAppReqSize);
-  //c.resp_msgbuf_ = rpc.alloc_msg_buffer_or_die(kAppRespSize);
-
-
-  //printf("Latency: Process %zu: Session connected. Starting work.\n",
-  //       FLAGS_process_id);
-  //printf(
-  //    "req_size median_us 5th_us 99th_us 99.9th_us 99.99th_us 99.999th_us "
-  //    "99.9999th_us max_us [new samples, total_samples in distribution, "
-  //    "total_time]\n");
 
   for (size_t msgbuf_idx = 0; msgbuf_idx < FLAGS_concurrency; msgbuf_idx++) {
     send_req(c, msgbuf_idx);
@@ -349,6 +330,7 @@ void client_func(erpc::Nexus *nexus) {
         stats.rpc_999_us, timely_0->get_rate_gbps(), erpc::kSessionCredits);
     fflush(stdout);
 
+
     // Reset stats for next iteration
     c.stat_rx_bytes_tot = 0;
     c.stat_tx_bytes_tot = 0;
@@ -356,6 +338,7 @@ void client_func(erpc::Nexus *nexus) {
     c.lat_vec.clear();
     timely_0->reset_rtt_stats();
 
+    // There is currently only one sender thread
     //if (c.thread_id_ == 0) {
     //  app_stats_t accum_stats;
     //  for (size_t i = 0; i < FLAGS_num_proc_other_threads; i++) {
@@ -374,63 +357,6 @@ void client_func(erpc::Nexus *nexus) {
     c.tput_t0.reset();
   }
 
-  //erpc::TimingWheel *wheel = rpc.get_wheel();
-  //if (wheel != nullptr && !wheel->record_vec_.empty()) {
-  //  const size_t num_to_print = 200;
-  //  const size_t tot_entries = wheel->record_vec_.size();
-  //  const size_t base_entry = tot_entries * .9;
-
-  //  printf("Printing up to 200 entries toward the end of wheel record\n");
-  //  size_t num_printed = 0;
-
-  //  for (size_t i = base_entry; i < tot_entries; i++) {
-  //    auto &rec = wheel->record_vec_.at(i);
-  //    printf("wheel: %s\n",
-  //           rec.to_string(console_ref_tsc, rpc.get_freq_ghz()).c_str());
-
-  //    if (num_printed++ == num_to_print) break;
-  //  }
-  //}
-  //for (size_t i = 0; i < FLAGS_test_ms; i += 1000) {
-  //  rpc.run_event_loop(kAppEvLoopMs);  // 1 second
-  //  if (ctrl_c_pressed == 1) break;
-
-  //  //const double ns = c.tput_t0.get_ns();
-  //  //erpc::Timely *timely_0 = c.rpc_->get_timely(0);
-
-  //  if (c.latency_samples_ == c.latency_samples_prev_) {
-  //    printf("No new responses in %.2f seconds\n", kAppEvLoopMs / 1000.0);
-  //    fprintf(stderr, "No new responses in %.2f seconds\n",
-  //            kAppEvLoopMs / 1000.0);
-  //    fflush(stderr);
-  //  } else {
-  //    printf(
-  //        "%zu %.1f %.1f %.1f %.1f %.1f %.1f %.1f %.1f "
-  //        "[%zu new samples, %zu total samples, %zu seconds]\n",
-  //        c.req_size_,
-  //        hdr_value_at_percentile(c.latency_hist_, 50.0) / kAppLatFac,
-  //        hdr_value_at_percentile(c.latency_hist_, 5.0) / kAppLatFac,
-  //        hdr_value_at_percentile(c.latency_hist_, 99) / kAppLatFac,
-  //        hdr_value_at_percentile(c.latency_hist_, 99.9) / kAppLatFac,
-  //        hdr_value_at_percentile(c.latency_hist_, 99.99) / kAppLatFac,
-  //        hdr_value_at_percentile(c.latency_hist_, 99.999) / kAppLatFac,
-  //        hdr_value_at_percentile(c.latency_hist_, 99.9999) / kAppLatFac,
-  //        hdr_max(c.latency_hist_) / kAppLatFac,
-  //        c.latency_samples_ - c.latency_samples_prev_, c.latency_samples_,
-  //        i / 1000);
-  //  }
-  //  fflush(stdout);
-
-  //  // Warmup for the first two seconds. Also, reset percentiles every minute.
-  //  const size_t seconds = i / 1000;
-  //  if (seconds < 2 || (seconds % 60 == 0)) {
-  //    hdr_reset(c.latency_hist_);
-  //    c.latency_samples_ = 0;
-  //    c.latency_samples_prev_ = 0;
-  //  }
-
-  //  c.latency_samples_prev_ = c.latency_samples_;
-  //}
 }
 
 int main(int argc, char **argv) {
@@ -442,17 +368,6 @@ int main(int argc, char **argv) {
                     FLAGS_numa_node, 0);
   nexus.register_req_func(kAppReqType, req_handler);
 
-  //if(FLAGS_process_id < FLAGS_num_server_processes) {
-  //  // Server function
-
-  //} else {
-  //  // Client function
-  //  //std::ifstream data_stream(std::string("/var/data/ycsbc-key-1-blade"));
-  //  //parser.read_all_keys(data_stream, num_keys);
-  //  //std::ifstream query_stream(std::string("/var/data/ycsbc-query-1-blade"));
-  //  //parser.read_all_queries(query_stream, num_queries);
-  //}
-
   auto t = std::thread(
       FLAGS_process_id < FLAGS_num_server_processes ? server_func : client_func,
       &nexus);
@@ -460,10 +375,10 @@ int main(int argc, char **argv) {
   const size_t num_socket_cores =
       erpc::get_lcores_for_numa_node(FLAGS_numa_node).size();
   const size_t affinity_core = FLAGS_process_id % num_socket_cores;
-  printf("Latency: Will run on CPU core %zu\n", affinity_core);
+  printf("Hashtable: Will run on CPU core %zu\n", affinity_core);
   if (FLAGS_process_id >= num_socket_cores) {
     fprintf(stderr,
-            "Latency: Warning: The number of latency processes is close to "
+            "Hashtable: Warning: The number of latency processes is close to "
             "this machine's core count. This could be fine, but to ensure good "
             "performance, please double-check for core collision.\n");
   }
