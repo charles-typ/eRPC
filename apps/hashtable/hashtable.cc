@@ -150,10 +150,14 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
 
   auto *resp =
       reinterpret_cast<Response *>(req_handle->pre_resp_msgbuf_.buf_);
-  std::cout << "Key to find is: " << key_copy << std::endl;
+  if(kAppVerifyCorrectness) {
+    std::cout << "Key to find is: " << key_copy << std::endl;
+  }
   auto result =  c->ht.find(key_copy); // TODO avoid data copy here
   //const bool success = c->ht.find_inline(key_copy, resp->result); // TODO avoid data copy here
-  std::cout << "result is: " << (*result).second << std::endl;
+  if(kAppVerifyCorrectness) {
+    std::cout << "result is: " << (*result).second << std::endl;
+  }
   memcpy(&(resp->result), result.get_value(), sizeof(Response::result));
   c->stat_rx_bytes_tot += FLAGS_req_size;
   c->stat_tx_bytes_tot += FLAGS_resp_size;
@@ -248,9 +252,11 @@ void app_cont_func(void *_context, void *_tag) {
   auto *c = static_cast<ClientContext *>(_context);
   auto msgbuf_idx = reinterpret_cast<size_t>(_tag);
   //const erpc::MsgBuffer &resp_msgbuf = c->req_msgbuf_[msgbuf_idx];
-  auto *resp =
-      reinterpret_cast<Response *>(c->resp_msgbuf_[msgbuf_idx].buf_);
-  std::cout << "Check this result: " << resp->result << std::endl;
+  if(kAppVerifyCorrectness) {
+    auto *resp =
+        reinterpret_cast<Response *>(c->resp_msgbuf_[msgbuf_idx].buf_);
+    std::cout << "Check this result: " << resp->result << std::endl;
+  }
 
   if (kAppVerbose) {
     printf("Latency: Received response of size %zu bytes\n",
