@@ -218,6 +218,10 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
   LOG(log_level::info) << "Number of queries: " << input_parser.all_query.size();
   req.key = input_parser.all_query[c.num_reqs].key;
   *reinterpret_cast<Request *>(req_msgbuf.buf_) = req;
+  if(c.num_reqs >= FLAGS_num_queries) {
+    experiment_finished = 1;
+    return;
+  }
 
   const size_t server_id = c.fastrand_.next_u32() % FLAGS_num_server_processes;
   c.rpc_->enqueue_request(c.session_num_vec_[server_id], kAppReqType,
@@ -229,9 +233,6 @@ inline void send_req(ClientContext &c, size_t msgbuf_idx) {
            c.req_msgbuf_[msgbuf_idx].get_data_size(), server_id);
   }
   c.num_reqs++;
-  if(c.num_reqs >= FLAGS_num_queries) {
-    experiment_finished = 1;
-  }
   //if(c.num_reqs%1000 == 0) {
   //  LOG(log_level::info) << "Number of requests sent: " << c.num_reqs;
   //}
