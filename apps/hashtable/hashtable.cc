@@ -150,6 +150,7 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
 
   auto *resp =
       reinterpret_cast<Response *>(req_handle->pre_resp_msgbuf_.buf_);
+  std::cout << "Key to find is: " << key_copy << std::endl;
   auto result =  c->ht.find(key_copy); // TODO avoid data copy here
   //const bool success = c->ht.find_inline(key_copy, resp->result); // TODO avoid data copy here
   memcpy(&(resp->result), &result, sizeof(Response::result));
