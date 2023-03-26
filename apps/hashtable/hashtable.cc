@@ -183,7 +183,9 @@ void server_func(erpc::Nexus *nexus) {
   for(size_t i = 0; i < FLAGS_num_keys; i++) {  //FIXME num_keys
     std::string value = gen_random(7); //FIXME check this size
     c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
-    std::cout << "Inserting key: " << input_parser.all_keys[i] << " value: " << value << std::endl;
+    if(kAppVerifyCorrectness) {
+      std::cout << "Inserting key: " << input_parser.all_keys[i] << " value: " << value << std::endl;
+    }
   }
   LOG(log_level::info) << "insert all keys";
 
