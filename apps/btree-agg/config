@@ -1,0 +1,12 @@
+--test_ms 200000000
+--sm_verbose 0
+--resp_size 40
+--req_size 40
+--num_server_processes 1
+--numa_0_ports 0
+--numa_1_ports 0
+--concurrency 1
+--num_keys 500000000
+--num_queries 10000000
+--data_filepath /var/data/ycsbc-key-1-blade
+--query_filepath /var/data/ycsbc-query-1-blade
