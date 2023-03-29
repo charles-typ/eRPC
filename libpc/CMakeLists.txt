@@ -56,36 +56,37 @@ if (BUILD_TESTS)
     add_test(PCTest pc_tests)
 endif()
 
-#        add_library(pc_parser OBJECT
-#                src/pc/datastructure/bplustree.h
-#                src/pc/datastructure/hashtable.h
-#                src/pc/datastructure/list.h
-#                #src/pc/parser/local_parse.h
-#                #src/pc/parser/local_parse.cpp
-#                #src/pc/parser/pulse_parse.h
-#                #src/pc/parser/pulse_parse.cpp
-#                src/pc/parser/rpc_parse.cpp
-#                src/pc/parser/rpc_parse.h
-#                src/pc/parser/parse.h
-#                src/pc/utils/rand_util.h
-#                src/pc/config.h
-#                ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/inih/ini.c)
-#        
-#        #add_dependencies(pc_parser dpdk_ep)
-#        #target_link_libraries(pc ${DPDK_LIBRARIES})
-#        #target_link_libraries(pc pthread dl rt m numa mlx5 ibverbs)
-#        set_target_properties(pc_parser PROPERTIES LINKER_LANGUAGE CXX)
-#        # Enable C++ 17 here
-#        # https://stackoverflow.com/questions/45688522/how-to-enable-c17-in-cmake
-#        target_compile_features(pc_parser PRIVATE cxx_std_17)
-#        
-#        
-#        install(TARGETS pc_parser
-#                RUNTIME DESTINATION bin
-#                ARCHIVE DESTINATION lib
-#                LIBRARY DESTINATION lib)
-#        install(DIRECTORY src/pc
-#                DESTINATION include
-#                FILES_MATCHING PATTERN "*.h")
-#
-#endif()
+if(USE_SYSTEM_DPDK)
+        add_library(pc_parser OBJECT
+                src/pc/datastructure/bplustree.h
+                src/pc/datastructure/hashtable.h
+                src/pc/datastructure/list.h
+                #src/pc/parser/local_parse.h
+                #src/pc/parser/local_parse.cpp
+                #src/pc/parser/pulse_parse.h
+                #src/pc/parser/pulse_parse.cpp
+                src/pc/parser/rpc_parse.cpp
+                src/pc/parser/rpc_parse.h
+                src/pc/parser/parse.h
+                src/pc/utils/rand_util.h
+                src/pc/config.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/inih/ini.c)
+        
+        #add_dependencies(pc_parser dpdk_ep)
+        #target_link_libraries(pc ${DPDK_LIBRARIES})
+        #target_link_libraries(pc pthread dl rt m numa mlx5 ibverbs)
+        set_target_properties(pc_parser PROPERTIES LINKER_LANGUAGE CXX)
+        # Enable C++ 17 here
+        # https://stackoverflow.com/questions/45688522/how-to-enable-c17-in-cmake
+        target_compile_features(pc_parser PRIVATE cxx_std_17)
+        
+        
+        install(TARGETS pc_parser
+                RUNTIME DESTINATION bin
+                ARCHIVE DESTINATION lib
+                LIBRARY DESTINATION lib)
+        install(DIRECTORY src/pc
+                DESTINATION include
+                FILES_MATCHING PATTERN "*.h")
+
+endif()

@@ -15,7 +15,7 @@
 long char_to_int64(char *a)
 {
   long num = 0;
-  for (int i = 0; i < sizeof(a); i++)
+  for (size_t i = 0; i < sizeof(a); i++)
     num = (num << 8) | a[i];
   return num;
 }
@@ -217,6 +217,7 @@ namespace pc
      */
     int BPlusTree::init(const char *path)
     {
+      (void)path;
       root = NULL;
       return 1;
     }
@@ -368,6 +369,7 @@ namespace pc
      */
     int BPlusTree::aggregate_time_stat(const uint64_t key, uint64_t len, long &result)
     {
+      (void)result;
       check();
       uint64_t number_nodes_traverse = 0;
       uint64_t number_keys_traverse = 0;
@@ -383,7 +385,7 @@ namespace pc
         {
           i += 1;
         }
-        number_keys_traverse += current_node->nk;
+        number_keys_traverse += static_cast<long unsigned int>(current_node->nk);
         current_node = current_node->children[i];
         number_nodes_traverse++;
       }
@@ -403,14 +405,13 @@ namespace pc
         {
           while (i < current_node->nk)
           {
-            long node_value = char_to_int64(current_node->entries[i].value);
             if (current_node->entries[i].key > key + len)
               break;
             i++;
           }
           if (current_node->entries[i].key > key + len)
             break;
-          number_keys_traverse += current_node->nk;
+          number_keys_traverse += static_cast<uint64_t>(current_node->nk);
           current_node = current_node->next;
           number_nodes_traverse++;
           i = 0;
@@ -618,7 +619,7 @@ namespace pc
      */
     inline struct bplustree_node *BPlusTree::create_node(int _is_leaf)
     {
-      struct bplustree_node *new_node_p = (struct bplustree_node *)malloc(sizeof(struct bplustree_node));
+      struct bplustree_node *new_node_p = static_cast<struct bplustree_node *>(malloc(sizeof(struct bplustree_node)));
       new_node_p->is_leaf = _is_leaf;
       new_node_p->nk = 0;
       new_node_p->next = new_node_p->previous = NULL;
@@ -647,7 +648,7 @@ namespace pc
         if (i < current_node->nk && key == current_node->entries[i].key)
         {
           // key found, update value and return
-          memcpy(current_node->entries[i].value, (char *)value, strlen((char *)value) + 1);
+          memcpy(current_node->entries[i].value, static_cast<char *>(value), strlen(static_cast<char *>(value)) + 1);
           return true;
         }
         // key not found
@@ -788,7 +789,7 @@ namespace pc
 #endif
 
         node->entries[i + 1].key = key;
-        memcpy(node->entries[i + 1].value, (char *)value, strlen((char *)value) + 1);
+        memcpy(node->entries[i + 1].value, static_cast<char *>(value), strlen(static_cast<char *>(value)) + 1);
 #ifdef VERBOSE_FLAG
         std::cout << "Memcpy size: " << strlen((char *)value) + 1 << std::endl;
 #endif
@@ -839,7 +840,7 @@ namespace pc
       {
         root = create_node(LEAF_NODE_TRUE_FLAG); // root is also a leaf
         root->entries[0].key = key;
-        memcpy(root->entries[0].value, (char *)value, strlen((char *)value) + 1);
+        memcpy(root->entries[0].value, static_cast<char *>(value), strlen(static_cast<char *>(value)) + 1);
         root->nk = 1;
 #ifdef VERBOSE_FLAG
         std::cout << "Printing the Node info after insert" << std::endl;
@@ -926,21 +927,21 @@ namespace pc
     {
       std::ofstream fout(filepath);
       int node_size = sizeof(bplustree_node);
-      long long tree_size = node_size * (long long)nodes.size();
-      fout << "Tree size = " << (double)tree_size / 1e9 << " GB" << std::endl;
+      long long tree_size = node_size * static_cast<long long>(nodes.size());
+      fout << "Tree size = " << static_cast<double>(tree_size) / 1e9 << " GB" << std::endl;
       if (size_only)
       {
         fout.close();
         return;
       }
 
-      unsigned long long min_addr = (unsigned long long)root;
+      unsigned long long min_addr = reinterpret_cast<unsigned long long>(root);
 
       for (auto curr_node : nodes)
       {
-        if (min_addr > (unsigned long long)curr_node)
+        if (min_addr > reinterpret_cast<unsigned long long>(curr_node))
         {
-          min_addr = (unsigned long long)curr_node;
+          min_addr = reinterpret_cast<unsigned long long>(curr_node);
         }
       }
 
@@ -949,32 +950,32 @@ namespace pc
         // decrease children, next and previous pointers
         for (int i = 0; i <= curr_node->nk; ++i)
         {
-          curr_node->children[i] = (bplustree_node *)((unsigned long long)curr_node->children[i] - min_addr);
+          curr_node->children[i] = reinterpret_cast<bplustree_node *>(reinterpret_cast<unsigned long long>(curr_node->children[i]) - min_addr);
         }
         if (curr_node->next != NULL)
-          curr_node->next = (bplustree_node *)((unsigned long long)curr_node->next - min_addr);
+          curr_node->next = reinterpret_cast<bplustree_node *>(reinterpret_cast<unsigned long long>(curr_node->next) - min_addr);
         if (curr_node->previous != NULL)
-          curr_node->previous = (bplustree_node *)((unsigned long long)curr_node->previous - min_addr);
+          curr_node->previous = reinterpret_cast<bplustree_node *>(reinterpret_cast<unsigned long long>(curr_node->previous) - min_addr);
 
         // print node
-        unsigned char *addr = (unsigned char *)curr_node;
-        fout << "New node: address = " << (void *)(addr - (unsigned char *)min_addr) << std::endl;
-        for (int i = 0; i < sizeof(bplustree_node); ++i, ++addr)
+        unsigned char *addr = reinterpret_cast<unsigned char *>(curr_node);
+        fout << "New node: address = " << reinterpret_cast<void *>(addr - reinterpret_cast<unsigned char *>(min_addr)) << std::endl;
+        for (size_t i = 0; i < sizeof(bplustree_node); ++i, ++addr)
         {
-          fout << "address = " << (void *)(addr - (unsigned char *)min_addr) << " value = " << std::hex
-               << (unsigned int)*addr << std::endl;
+          fout << "address = " << reinterpret_cast<void *>(addr - reinterpret_cast<unsigned char *>(min_addr)) << " value = " << std::hex
+               << static_cast<unsigned int>(*addr) << std::endl;
         }
         fout << std::endl;
 
         // increase children next and previous pointers
         for (int i = 0; i <= curr_node->nk; ++i)
         {
-          curr_node->children[i] = (bplustree_node *)((unsigned long long)curr_node->children[i] + min_addr);
+          curr_node->children[i] = reinterpret_cast<bplustree_node *>(reinterpret_cast<unsigned long long>(curr_node->children[i]) + min_addr);
         }
         if (curr_node->next != NULL)
-          curr_node->next = (bplustree_node *)((unsigned long long)curr_node->next + min_addr);
+          curr_node->next = reinterpret_cast<bplustree_node *>(reinterpret_cast<unsigned long long>(curr_node->next) + min_addr);
         if (curr_node->previous != NULL)
-          curr_node->previous = (bplustree_node *)((unsigned long long)curr_node->previous + min_addr);
+          curr_node->previous = reinterpret_cast<bplustree_node *>(reinterpret_cast<unsigned long long>(curr_node->previous) + min_addr);
       }
 
       fout.close();
@@ -984,8 +985,8 @@ namespace pc
     {
       // Get size of B+Tree
       int node_size = sizeof(bplustree_node);
-      long long tree_size = node_size * (long long)nodes.size();
-      std::cout << "Tree size = " << (double)tree_size / 1e9 << " GB" << std::endl;
+      long long tree_size = node_size * static_cast<long long>(nodes.size());
+      std::cout << "Tree size = " << static_cast<double>(tree_size) / 1e9 << " GB" << std::endl;
 
       // Get depth of B+Tree
       struct bplustree_node *current_node = root;

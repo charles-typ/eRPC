@@ -64,6 +64,7 @@ set(TRANSPORT "dpdk" CACHE STRING "Datapath transport (infiniband/raw/dpdk/fake)
 option(ROCE "Use RoCE if TRANSPORT is infiniband" OFF)
 option(AZURE "Configure DPDK for Azure if TRANSPORT is dpdk" OFF)
 option(PERF "Compile for performance" ON)
+option(USE_SYSTEM_DPDK "Compile with DPDK" ON)
 set(PGO "none" CACHE STRING "Profile-guided optimization (generate/use/none)")
 set(LOG_LEVEL "warn" CACHE STRING "Logging level (none/error/warn/info/reorder/trace/cc)") 
 
@@ -324,6 +325,7 @@ endif()
 
 add_subdirectory(libpc)
 add_subdirectory(apps)
+add_subdirectory(benchmark)
 
 # Compile the tests
 if(TESTING)

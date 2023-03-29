@@ -4,8 +4,8 @@ endif ()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libpc/src
         ${CMAKE_CURRENT_SOURCE_DIR}/../benchmark
-        ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/inih
-        ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/concurrentqueue)
+        ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/inih
+        ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/concurrentqueue)
 
 # Parser bench
 add_executable(parser_bench src/parser_benchmark.cpp)

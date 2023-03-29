@@ -5,9 +5,6 @@
 
 #include "pc/datastructure/bplustree.h"
 #include "pc/parser/rpc_parse.h"
-#include "pc/utils/time_util.h"
-#include "pc/utils/rand_util.h"
-#include "pc/utils/memory_util.h"
 #include "benchmark_util.h"
 
 using namespace std;
@@ -26,32 +23,29 @@ struct btree_element
 
 int main()
 {
-    init();
     BPlusTree tree("./");
-    auto start = get_time();
+    //auto start = get_time();
     std::ifstream data_stream(std::string("/var/data/time-key-1-blade"));
     RpcParse parser;
     parser.read_all_keys(data_stream, num_keys, true);
-    auto end_1 = get_time();
-    std::cout << "Takes " << (end_1 - start) / 1000 / 1000 /1000 << " seconds to read keys to memory" << std::endl;
+    //auto end_1 = get_time();
+    //std::cout << "Takes " << (end_1 - start) / 1000 / 1000 /1000 << " seconds to read keys to memory" << std::endl;
     // Insert random key and values
     vector<string> ctr(num_keys);
-    for (int i = 0; i < num_keys; ++i)
+    for (uint64_t i = 0; i < num_keys; ++i)
     {
         ctr[i] = gen_random(7);
     }
-    auto end_2 = get_time();
-    std::cout << "Takes " << (end_2 - end_1) / 1000 / 1000 /1000 << " seconds to generate random values " << std::endl;
-    for (int i = 0; i < num_keys; ++i)
+    //auto end_2 = get_time();
+    //std::cout << "Takes " << (end_2 - end_1) / 1000 / 1000 /1000 << " seconds to generate random values " << std::endl;
+    for (uint64_t i = 0; i < num_keys; ++i)
     {
-        tree.insert(parser.all_keys[i], (void *)ctr[i].c_str());
+        tree.insert(parser.all_keys[i], const_cast<void*>(reinterpret_cast<const void *>(ctr[i].c_str())));
         // std::cout << "Insert complete" << endl;
     }
-    auto end_3 = get_time();
-    std::cout << "Takes " << (end_3 - end_2) / 1000 / 1000 /1000 << " seconds to insert to B+Tree " << std::endl;
+    //auto end_3 = get_time();
+    //std::cout << "Takes " << (end_3 - end_2) / 1000 / 1000 /1000 << " seconds to insert to B+Tree " << std::endl;
 
-    collect_memory_stat();
-    std::cout << "Current virtual memory used by process is: " << virtual_memory_used_process() << std::endl;
     tree.print_statistics();
 
     std::vector<uint64_t> query = {
@@ -66,16 +60,16 @@ int main()
 
     long result;
     int repeat = 1;
-    uint64_t total_time = 0;
-    for(int i = 0; i < num_queries; i++) {
+    //uint64_t total_time = 0;
+    for(uint64_t i = 0; i < num_queries; i++) {
 	    for(int j = 0; j < repeat; j++)
 	{
-        	auto end_4 = get_time();
+        	//auto end_4 = get_time();
         	tree.aggregate_time_stat(parser.all_keys[0], query[i], result);
-        	auto end_5 = get_time();
-		total_time+= (end_5 - end_4);
+        	//auto end_5 = get_time();
+		//total_time+= (end_5 - end_4);
 	}
-        std::cout << "Takes " <<  total_time / repeat << " nanoseconds to aggregate." << std::endl;
+        //std::cout << "Takes " <<  total_time / repeat << " nanoseconds to aggregate." << std::endl;
     }
 
     return 0;
