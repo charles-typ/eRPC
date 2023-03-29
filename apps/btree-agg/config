@@ -9,4 +9,4 @@
 --num_keys 500000000
 --num_queries 10000000
 --data_filepath /var/data/ycsbc-key-1-blade
---query_filepath /var/data/ycsbc-query-1-blade
+--query_filepath /var/data/ycsbe-query-1-blade

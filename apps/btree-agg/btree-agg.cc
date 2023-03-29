@@ -10,7 +10,7 @@
 #include "pc/parser/rpc_parse.h"
 #include "pc/config.h"
 #include "pc/utils/logger.h"
-#include "pc/datastructure/hashtable.h"
+#include "pc/datastructure/bplustree.h"
 #include "pc/worker/rpc_worker.h"
 #include "concurrentqueue.h"
 
@@ -91,7 +91,7 @@ struct app_stats_t {
 class ServerContext : public BasicAppContext {
  public:
   // Data structure 
-  hashtable::HashTable ht;
+  BPlusTree *tree;
   // Workers
   moodycamel::ConcurrentQueue<Request> request_q;
   moodycamel::ConcurrentQueue<Response> response_q;
@@ -102,6 +102,12 @@ class ServerContext : public BasicAppContext {
   size_t stat_tx_bytes_tot = 0;
   // Buffer
   erpc::MsgBuffer req_msgbuf_, resp_msgbuf_;
+  ServerContext() {
+    tree = new BPlusTree("./");
+  }
+  ~ServerContext() {
+    delete tree;
+  }
 };
 
 class ClientContext : public BasicAppContext {
@@ -146,19 +152,22 @@ void req_handler(erpc::ReqHandle *req_handle, void *_context) {
 
   //uint8_t key_copy[sizeof(hashtable::key_type)];  // mti->get() modifies key
   hashtable::key_type key_copy;
+  uint64_t scan_length;
   memcpy(&key_copy, &(req->key), sizeof(hashtable::key_type));
+  memcpy(&scan_length, &(req->ht), sizeof(scan_length));
 
   auto *resp =
       reinterpret_cast<Response *>(req_handle->pre_resp_msgbuf_.buf_);
   if(kAppVerifyCorrectness) {
     std::cout << "Key to find is: " << key_copy << std::endl;
   }
-  auto result =  c->ht.find(key_copy); // TODO avoid data copy here
+  long result;
+  auto node_count =  c->tree->aggregate_time(key_copy, scan_length, result); // TODO avoid data copy here
   //const bool success = c->ht.find_inline(key_copy, resp->result); // TODO avoid data copy here
   if(kAppVerifyCorrectness) {
-    std::cout << "result is: " << (*result).second << std::endl;
+    //std::cout << "result is: " << (*result).second << std::endl;
   }
-  memcpy(&(resp->result), result.get_value(), sizeof(Response::result));
+  memcpy(&(resp->result), &node_count, sizeof(Response::result));
   c->stat_rx_bytes_tot += FLAGS_req_size;
   c->stat_tx_bytes_tot += FLAGS_resp_size;
   //LOG(log_level::info) << "Receving requests and Sending out response";
@@ -182,7 +191,7 @@ void server_func(erpc::Nexus *nexus) {
   LOG(log_level::info) << "Load all keys";
   for(size_t i = 0; i < FLAGS_num_keys; i++) {  //FIXME num_keys
     std::string value = gen_random(7); //FIXME check this size
-    c.ht.insert(std::make_pair(input_parser.all_keys[i], value.c_str()));    
+    c.tree->insert(input_parser.all_keys[i], const_cast<void*>(reinterpret_cast<const void*>(value.c_str())));    
     if(kAppVerifyCorrectness) {
       std::cout << "Inserting key: " << input_parser.all_keys[i] << " value: " << value << std::endl;
     }
