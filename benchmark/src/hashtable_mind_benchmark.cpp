@@ -10,7 +10,7 @@
 
 using namespace pc::parser;
 
-std::string gen_random(const int len)
+std::string gen_random(const size_t len)
 {
     static const char alphanum[] =
         "0123456789"
@@ -19,9 +19,9 @@ std::string gen_random(const int len)
     std::string tmp_s;
     tmp_s.reserve(len);
 
-    for (int i = 0; i < len; ++i)
+    for (size_t i = 0; i < len; ++i)
     {
-        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+        tmp_s += alphanum[static_cast<size_t>(rand()) % (sizeof(alphanum) - 1)];
     }
 
     return tmp_s;
@@ -105,7 +105,7 @@ int main()
     }
     HashTableMIND::HashTable hashtb;
     parser.read_all_keys(data_stream, num_keys);
-    for (int i = 0; i < num_keys; ++i)
+    for (size_t i = 0; i < num_keys; ++i)
     {
         std::string val_string = gen_random(7);
         hashtb.insert(parser.all_keys[i], val_string.c_str(), true);
@@ -113,7 +113,7 @@ int main()
             std::cout << i << "/" << num_keys << std::endl;
     }
 #endif
-    unsigned int *latency_array = (unsigned int *)malloc(num_queries * sizeof(unsigned int));
+    unsigned int *latency_array = static_cast<unsigned int *>(malloc(num_queries * sizeof(unsigned int)));
 
     //std::vector<query> query_list;
     //read_all_query_short(query_stream, query_list, num_queries);
@@ -130,13 +130,13 @@ int main()
     std::cout << "Wait for 30 sec to reset the fault" << std::endl;
     sleep(30);
     auto start_tot = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < num_queries; ++i)
+    for (size_t i = 0; i < num_queries; ++i)
     {
-        int cnt = 0;
+        uint64_t cnt = 0;
         //auto q = query_list[i];
         //assert(q.query_type == "READ");
         auto start = std::chrono::high_resolution_clock::now();
-        auto found = hashtb.find(parser.all_query[i].key, false, &cnt);
+        auto found = hashtb.find(parser.all_query[i].key, false, reinterpret_cast<int*>(&cnt));
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         unsigned int latency = duration.count();

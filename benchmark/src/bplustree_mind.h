@@ -15,7 +15,7 @@
 
 long char_to_int64(char* a) {
     long num = 0;
-    for ( int i = 0 ; i < sizeof(a) ; i++ )
+    for ( size_t i = 0 ; i < sizeof(a) ; i++ )
         num = (num << 8) | a[i];
     return num;
 }
@@ -31,7 +31,7 @@ long char_to_int64(char* a) {
 #define BPLUSTREE_MAX_CHILDREN (2 * BPLUSTREE_MIN_DEGREE)
 
 /* default length for value */
-#define DEFAULT_VALUE_LEN 8
+const size_t DEFAULT_VALUE_LEN = 8;
 
 #define LEAF_NODE_TRUE_FLAG 1
 #define LEAF_NODE_FALSE_FLAG 0
@@ -54,7 +54,7 @@ struct bplustree_entry {
     char value[DEFAULT_VALUE_LEN];  //8 Bytes
     bplustree_entry(uint64_t _key, char* _value) {
         key = _key;
-        for(int i = 0; i < DEFAULT_VALUE_LEN; i++) {
+        for(size_t i = 0; i < DEFAULT_VALUE_LEN; i++) {
             value[i] = _value[i];
         }
     }
@@ -63,7 +63,7 @@ struct bplustree_entry {
 //         std::cout << "calling copy constructor " << std::endl;
 // #endif
         key = entry.key;
-        for(int i = 0; i < DEFAULT_VALUE_LEN; i++) {
+        for(size_t i = 0; i < DEFAULT_VALUE_LEN; i++) {
             value[i] = entry.value[i];
         }
     }
@@ -73,7 +73,7 @@ struct bplustree_entry {
 //         std::cout << "new key: " << entry.key << std::endl;
 // #endif
         key = entry.key;
-        for(int i = 0; i < DEFAULT_VALUE_LEN; i++) {
+        for(size_t i = 0; i < DEFAULT_VALUE_LEN; i++) {
             value[i] = entry.value[i];
         }
         return *this;
@@ -97,6 +97,11 @@ struct bplustree_node {
     //used for leaf type nodes
     struct bplustree_node *next;   //8 Bytes
     // struct bplustree_node *previous;   //8 Bytes
+    //bplustree_node(bplustree_node const &) = default;
+    //bplustree_node& operator=(bplustree_node other) {
+    //    is_leaf = other.is_leaf;
+    //    nk = other.nk;
+    //}
 };
 
 class BPlusTree {
@@ -113,7 +118,7 @@ public:
 
     int read(const uint64_t key, void *&result);
 
-    int scan(const uint64_t key, int len, std::vector<struct bplustree_entry> &result);
+    uint64_t scan(const uint64_t key, int len, std::vector<struct bplustree_entry> &result);
 
     int aggregate(const uint64_t key, unsigned long long len, long &result, int agg_type, int verbose);
 
@@ -196,29 +201,30 @@ inline int BPlusTree::is_node_full(int nk) {
  * BPlusTree::init -- initialize bplus tree
  */
 int BPlusTree::init(const char *path) {
+    (void)path;
     root = NULL;
     return 1;
 }
 
 void *BPlusTree::get_root(void)
 {
-    return (void *)root;
+    return static_cast<void *>(root);
 }
 
 int BPlusTree::set_root(void *root_ptr) {
-    root = (bplustree_node *)root_ptr;
+    root = static_cast<bplustree_node *>(root_ptr);
     return 1;
 }
 
 /**
  * BPlusTree::scan -- perform range query
  */
-int BPlusTree::scan(const uint64_t key, int len, std::vector <struct bplustree_entry> &result) {
+uint64_t BPlusTree::scan(const uint64_t key, int len, std::vector <struct bplustree_entry> &result) {
     check();
 
     struct bplustree_node *current_node = root;
     // struct bplustree_node *tmp = (struct bplustree_node *)malloc(sizeof(*tmp));
-    int total_chase = 0;
+    uint64_t total_chase = 0;
 
     //going down upto the leaf
     while(current_node != NULL && !current_node->is_leaf) {
@@ -269,26 +275,26 @@ int BPlusTree::scan(const uint64_t key, int len, std::vector <struct bplustree_e
 }
 
 int BPlusTree::debug_traverse_all(void) {
-    check();
+    //check();
 
-    struct bplustree_node *current_node = root;
-    struct bplustree_node *tmp = (struct bplustree_node *)malloc(sizeof(*tmp));
-    unsigned long long total_leaves = 0;
+    //struct bplustree_node *current_node = root;
+    //struct bplustree_node *tmp = static_cast<struct bplustree_node *>(malloc(sizeof(*tmp)));
+    //unsigned long long total_leaves = 0;
 
-    //going down upto the left most leaf
-    while(current_node != NULL && !current_node->is_leaf) {
-        current_node = current_node->children[0];
-    }
+    ////going down upto the left most leaf
+    //while(current_node != NULL && !current_node->is_leaf) {
+    //    current_node = current_node->children[0];
+    //}
 
-    //reached the leaf
-    while(current_node != NULL) {
-        memcpy(tmp, current_node, sizeof(*tmp));
-        current_node = current_node->next;
-        total_leaves ++;
-    }
+    ////reached the leaf
+    //while(current_node != NULL) {
+    //    memcpy(tmp, current_node, sizeof(*tmp));
+    //    current_node = current_node->next;
+    //    total_leaves ++;
+    //}
 
-    std::cout << "Total leaves: " << total_leaves << std::endl;
-    free(tmp);
+    //std::cout << "Total leaves: " << total_leaves << std::endl;
+    //free(tmp);
     return 0;
 }
 
@@ -486,7 +492,7 @@ int BPlusTree::update(const uint64_t key, void *value, bool is_char = true) {
  */
 inline struct bplustree_node *BPlusTree::create_node(int _is_leaf) {
     // struct bplustree_node *new_node_p = (struct bplustree_node *) malloc(sizeof(struct bplustree_node));
-    struct bplustree_node *new_node_p = (struct bplustree_node *)mind_malloc(sizeof(struct bplustree_node));
+    struct bplustree_node *new_node_p = static_cast<struct bplustree_node *>(mind_malloc(sizeof(struct bplustree_node)));
     new_node_p->is_leaf = _is_leaf;
     new_node_p->nk = 0;
     new_node_p->next = NULL;    // new_node_p->previous = NULL;
@@ -512,10 +518,10 @@ bool BPlusTree::update_if_found(struct bplustree_node *current_node, uint64_t ke
         if (i < current_node->nk && key == current_node->entries[i].key) {
             //key found, update value and return
             if (is_char)
-                memcpy(current_node->entries[i].value, (char *)value,
-                    std::min((size_t)DEFAULT_VALUE_LEN, strlen((char *)value) + 1));
+                memcpy(current_node->entries[i].value, static_cast<char *>(value),
+                    std::min(DEFAULT_VALUE_LEN, strlen(static_cast<char *>(value)) + 1));
             else
-                memcpy(current_node->entries[i].value, (char *)value, DEFAULT_VALUE_LEN);
+                memcpy(current_node->entries[i].value, static_cast<char *>(value), DEFAULT_VALUE_LEN);
             return true;
         }
         //key not found
@@ -640,10 +646,10 @@ void BPlusTree::insert_not_full(struct bplustree_node *node, uint64_t key, void 
 
         node->entries[i + 1].key = key;
         if (is_char)
-            memcpy(node->entries[i + 1].value, (char *)value,
-                std::min((size_t)DEFAULT_VALUE_LEN, strlen((char *)value) + 1));
+            memcpy(node->entries[i + 1].value, static_cast<char *>(value),
+                std::min(DEFAULT_VALUE_LEN, strlen(static_cast<char *>(value)) + 1));
         else
-            memcpy(node->entries[i + 1].value, (char *)value, DEFAULT_VALUE_LEN);
+            memcpy(node->entries[i + 1].value, static_cast<char *>(value), DEFAULT_VALUE_LEN);
 #ifdef VERBOSE_FLAG_VERBOSE
         std::cout << "Memcpy size: " << strlen((char *) value) + 1 << std::endl;
 #endif
@@ -689,10 +695,10 @@ int BPlusTree::insert(const uint64_t key, void *value, bool is_char = true) {
         root = create_node(LEAF_NODE_TRUE_FLAG);    //root is also a leaf
         root->entries[0].key = key;
         if (is_char)
-            memcpy(root->entries[0].value, (char *)value,
-                std::min((size_t)DEFAULT_VALUE_LEN, strlen((char *)value) + 1));
+            memcpy(root->entries[0].value, static_cast<char *>(value),
+                std::min(DEFAULT_VALUE_LEN, strlen(static_cast<char *>(value)) + 1));
         else
-            memcpy(root->entries[0].value, (char *)value, DEFAULT_VALUE_LEN);
+            memcpy(root->entries[0].value, static_cast<char *>(value), DEFAULT_VALUE_LEN);
         root->nk = 1;
 #ifdef VERBOSE_FLAG_VERBOSE
         std::cout << "Printing the Node info after insert" << std::endl;
@@ -765,6 +771,8 @@ void BPlusTree::destroy() {
 }
 
 void BPlusTree::print_layout(std::string filepath, bool size_only = false) {
+    (void)filepath;
+    (void)size_only;
     // std::ofstream fout(filepath); 
     // int node_size = sizeof(bplustree_node);
     // long long tree_size = node_size * (long long)nodes.size(); 

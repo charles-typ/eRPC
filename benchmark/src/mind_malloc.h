@@ -2,7 +2,6 @@
 #define __MIND_MALLOC_H__
 
 #define TEST_REMOTE_ALLOC_FLAG 0xfe
-#define MAX_MIND_ALLOC_SIZE (4 * 1024 * 1024 * 1024UL)  // 4 GB
 #ifdef MIND_MMAP_RR // round robin
 #define TEST_MACRO_ALLOC_SIZE (256 * 1024 * 1024UL)  // 256 MB
 #else
@@ -13,6 +12,8 @@
 #include <sched.h>
 #include <iostream>
 #include <stdio.h>
+
+const uint64_t MAX_MIND_ALLOC_SIZE = 4294967296;// 4 * 1024 * 1024 * 1024;  // 4 GB
 
 void mind_malloc_add_mem(void);
 void *mind_malloc(unsigned long size);

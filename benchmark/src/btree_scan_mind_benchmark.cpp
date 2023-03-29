@@ -89,13 +89,13 @@ int main()
         mind_malloc_add_mem();
     }
     parser.read_all_keys(data_stream, num_keys);
-    for (int i = 0; i < num_keys; ++i)
+    for (size_t i = 0; i < num_keys; ++i)
     {
         std::string val_string = gen_random(7);
-        tree.insert(parser.all_keys[i], (void *)val_string.c_str());
+        tree.insert(parser.all_keys[i], const_cast<void*>(static_cast<const void*>(val_string.c_str())));
     }
 #endif
-    unsigned int *latency_array = (unsigned int *)malloc(num_queries * sizeof(unsigned int));
+    unsigned int *latency_array = static_cast<unsigned int *>(malloc(num_queries * sizeof(unsigned int)));
 
     parser.read_all_query(query_stream, num_queries);
     // for (int i = 0; i < num_queries; ++i)
@@ -110,14 +110,14 @@ int main()
     std::cout << "Wait for 30 sec to reset the fault" << std::endl;
     sleep(30);
     auto start_tot = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < num_queries; ++i)
+    for (size_t i = 0; i < num_queries; ++i)
     {
 #ifdef VERBOSE_FLAG
         std::cout << "Query[" << i << "] " << q.key << " | " << q.scan_len << std::endl;
 #endif
         std::vector<struct bplustree_entry> result;
         auto start = std::chrono::high_resolution_clock::now();
-        int cnt = tree.scan(parser.all_query[i].key, parser.all_query[i].scan_len * query_range_scale, result);
+        uint64_t cnt = tree.scan(parser.all_query[i].key, parser.all_query[i].scan_len * query_range_scale, result);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
         unsigned int latency = duration.count();

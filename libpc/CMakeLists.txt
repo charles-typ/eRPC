@@ -56,7 +56,7 @@ if (BUILD_TESTS)
     add_test(PCTest pc_tests)
 endif()
 
-if(USE_SYSTEM_DPDK)
+if(NOT USE_SYSTEM_DPDK)
         add_library(pc_parser OBJECT
                 src/pc/datastructure/bplustree.h
                 src/pc/datastructure/hashtable.h

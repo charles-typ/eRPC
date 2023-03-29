@@ -14,7 +14,7 @@ class HashTable;
 
 typedef uint64_t key_type;
 
-#define DEFAULT_VALUE_LEN 8
+const size_t DEFAULT_VALUE_LEN = 8;
 class Node {
     friend class HashTable;
     friend class Iterator;
@@ -31,7 +31,7 @@ public: // TODO: proper encapsulation
     void init(key_type _key, const char* _value) 
     {
         key = _key;
-        memcpy(value, _value, std::min((size_t)DEFAULT_VALUE_LEN, strlen(_value) + 1));
+        memcpy(value, _value, std::min(DEFAULT_VALUE_LEN, strlen(_value) + 1));
         next = NULL;
     }
 
@@ -95,10 +95,11 @@ class HashTable {
         // capacity = 1000;
 
         // lists = std::vector<List::List<Node *>>(capacity);
-        bucket_ptr_list = (Node **)mind_malloc(sizeof(Node *) * capacity);
-	    memset(bucket_ptr_list, sizeof(Node *) * capacity, 0);
-        std::cout << "Capacity (#buckets): " << (unsigned long)capacity << std::endl;
-	    std::cout << "Allocated buckets: " << (unsigned long)bucket_ptr_list << std::endl;
+        bucket_ptr_list = static_cast<Node **>(mind_malloc(sizeof(Node *) * capacity));
+        // FIXME! This could be a bug
+	    memset(bucket_ptr_list,  0, sizeof(Node *) * capacity);
+        std::cout << "Capacity (#buckets): " << static_cast<unsigned long>(capacity) << std::endl;
+	    std::cout << "Allocated buckets: " << reinterpret_cast<unsigned long>(bucket_ptr_list) << std::endl;
     }
 
     // void rehash() {
@@ -171,11 +172,11 @@ class HashTable {
 
     void *get_root(void)
     {
-        return (void *)bucket_ptr_list; // just an address
+        return static_cast<void *>(bucket_ptr_list); // just an address
     }
 
     int set_root(void *root_ptr) {
-        bucket_ptr_list = (Node **)root_ptr;
+        bucket_ptr_list = static_cast<Node **>(root_ptr);
         return 1;
     }
 
@@ -204,12 +205,12 @@ class HashTable {
             Node *node_ptr = find(key, false);
             // update
             if (node_ptr) {
-                memcpy(node_ptr->value, value, std::min((size_t)DEFAULT_VALUE_LEN, strlen(value) + 1));
+                memcpy(node_ptr->value, value, std::min(static_cast<size_t>(DEFAULT_VALUE_LEN), strlen(value) + 1));
                 return 1;
             }
         }
      
-        Node *new_node = (Node *)mind_malloc(sizeof(Node));
+        Node *new_node = static_cast<Node *>(mind_malloc(sizeof(Node)));
         new_node->init(key, value);
         insert_in_bucket(new_node);
 
@@ -270,7 +271,7 @@ if(cur_ptr < memory_1_min_range || cur_ptr > memory_1_max_range ) { // this shou
 
     void print_bucket_length(void)
     {
-        for (int i = 0; i < capacity; i += (capacity / 100))
+        for (uint64_t i = 0; i < capacity; i += (capacity / 100))
         {
             unsigned int size = 0;
             Node *cur_ptr = bucket_ptr_list[i];

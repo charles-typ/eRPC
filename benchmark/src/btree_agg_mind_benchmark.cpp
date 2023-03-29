@@ -96,15 +96,15 @@ int main()
     // std::vector<key_type> value_list;
     // read_time_series_keys(data_stream, key_list, value_list, num_keys);
     parser.read_all_keys(data_stream, num_keys, true);
-    for (int i = 0; i < num_keys; ++i)
+    for (size_t i = 0; i < num_keys; ++i)
     {
         std::string val_string = gen_random(7);
-        tree.insert(parser.all_keys[i], (void*)val_string.c_str(), false);    // use sacn length as value
+        tree.insert(parser.all_keys[i], const_cast<void*>(static_cast<const void*>(val_string.c_str())), false);    // use sacn length as value
         if (i % (num_keys / 100) == 0)
             std::cout << i << "/" << num_keys << std::endl;
     }
 #endif
-    unsigned int *latency_array = (unsigned int *)malloc(num_queries * sizeof(unsigned int));
+    unsigned int *latency_array = static_cast<unsigned int *>(malloc(num_queries * sizeof(unsigned int)));
 
     parser.read_time_series_query(query_stream, num_queries);
     std::cout << "== Start new count == " << std::endl;
@@ -112,7 +112,7 @@ int main()
 #ifndef STORE_TO_FILE
     sleep(30);
     auto start_tot = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < num_queries; ++i)
+    for (size_t i = 0; i < num_queries; ++i)
     {
         long result;
         auto start = std::chrono::high_resolution_clock::now(); 
