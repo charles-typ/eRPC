@@ -319,39 +319,11 @@ if(DPDK_NEEDED STREQUAL "true")
   endif()
 endif()
 
-# Using link-time optimization sometimes requires building with sources instead
-# of liberpc. See the hello world example's Makefile for an example of
-# compiling with liberpc.
 
 # PULSE libraries
 
 add_subdirectory(libpc)
 add_subdirectory(apps)
-#add_executable(${APP} apps/${APP}/${APP}.cc ${APP_ADDITIONAL_SOURCES} ${SOURCES})
-#target_include_directories(${APP} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/libpc/src
-#  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/inih
-#  ${CMAKE_CURRENT_SOURCE_DIR}/third_party/concurrentqueue)
-#add_dependencies(${APP} dpdk_ep)
-#target_link_libraries(${APP} ${DPDK_LIBRARIES})
-#target_compile_features(${APP} PRIVATE cxx_std_17)
-#
-#if(PERF)
-#  target_compile_options(${APP} PRIVATE "-flto")
-#endif()
-#target_link_libraries(${APP} ${LIBRARIES})
-#target_link_libraries(${APP} pc)
-
-# Compile hello_world apps
-#add_executable(hello_server hello_world/server.cc)
-#target_link_libraries(hello_server erpc ${LIBRARIES})
-#add_dependencies(hello_server dpdk_ep)
-#target_link_libraries(hello_server ${DPDK_LIBRARIES})
-#add_executable(hello_client hello_world/client.cc)
-#target_link_libraries(hello_client erpc ${LIBRARIES})
-#add_dependencies(hello_client dpdk_ep)
-#target_link_libraries(hello_client ${DPDK_LIBRARIES})
-
-add_subdirectory(hello_world)
 
 # Compile the tests
 if(TESTING)

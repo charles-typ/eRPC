@@ -10,32 +10,11 @@ add_library(pc OBJECT
         src/pc/datastructure/bplustree.h
         src/pc/datastructure/hashtable.h
         src/pc/datastructure/list.h
-        #src/pc/network/dpdk_transport.cpp
-        #src/pc/network/dpdk_transport.h
-        #src/pc/network/packet_txrx_dpdk.cpp
-        #src/pc/network/packet_txrx_dpdk.h
-        #src/pc/network/txrx_worker_dpdk.cpp
-        #src/pc/network/txrx_worker_dpdk.h
-        #src/pc/network/tx_worker_dpdk.cpp
-        #src/pc/network/tx_worker_dpdk.h
-        #src/pc/network/rx_worker_dpdk.cpp
-        #src/pc/network/rx_worker_dpdk.h
-        #src/pc/network/txrx_worker.cpp
-        #src/pc/network/txrx_worker.h
-        #src/pc/parser/local_parse.h
-        #src/pc/parser/local_parse.cpp
-        #src/pc/parser/pulse_parse.h
-        #src/pc/parser/pulse_parse.cpp
         src/pc/parser/rpc_parse.cpp
         src/pc/parser/rpc_parse.h
         src/pc/parser/parse.h
-        #src/pc/utils/core_util.h
         src/pc/utils/logger.cpp
         src/pc/utils/logger.h
-        #src/pc/utils/net_util.h
-        #src/pc/utils/rand_util.h
-        #src/pc/utils/time_util.h
-        #src/pc/utils/memory_util.h
         src/pc/worker/btree_agg_worker.cpp
         src/pc/worker/btree_agg_worker.h
         src/pc/worker/btree_scan_worker.cpp
