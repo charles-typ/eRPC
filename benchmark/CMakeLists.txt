@@ -7,10 +7,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libpc/src
         ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/inih
         ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/concurrentqueue)
 
-# Parser bench
-add_executable(parser_bench src/parser_benchmark.cpp)
 
 if (USE_SYSTEM_DPDK)
+        # Parser bench
+        add_executable(parser_bench src/parser_benchmark.cpp)
         add_dependencies(parser_bench dpdk_ep)
 
         target_link_libraries(parser_bench pc)

@@ -48,28 +48,28 @@ int main()
 
     tree.print_statistics();
 
-    std::vector<uint64_t> query = {
-                    10000000000,
-                    600000000000,
-                    36000000000000,
-                    864000000000000,
-                    2160000000000000};
+    std::vector<uint64_t> query;
+    uint64_t start = 2147483648;
+    for(int i = 0; i < 20; i++) {
+        query.push_back(start * std::pow(2, i));
+    }
+
 
     //std::ifstream query_stream(std::string("/var/data/time-query-1-blade"));
     //parser.read_time_series_query(query_stream, num_queries);
 
     long result;
-    int repeat = 1;
-    //uint64_t total_time = 0;
-    for(uint64_t i = 0; i < num_queries; i++) {
-	    for(int j = 0; j < repeat; j++)
-	{
-        	//auto end_4 = get_time();
+    uint64_t repeat = 10;
+    for(uint64_t i = 0; i < 20; i++) {
+        uint64_t total_time = 0;
+	    for(uint64_t j = 0; j < repeat; j++)
+	    {
+            auto start_time = std::chrono::high_resolution_clock::now();
         	tree.aggregate_time_stat(parser.all_keys[0], query[i], result);
-        	//auto end_5 = get_time();
-		//total_time+= (end_5 - end_4);
-	}
-        //std::cout << "Takes " <<  total_time / repeat << " nanoseconds to aggregate." << std::endl;
+            auto end_time = std::chrono::high_resolution_clock::now();
+            total_time+= static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time-start_time).count());
+	    }
+        std::cout << "Takes " <<  total_time / repeat << " nanoseconds to aggregate "<< start * std::pow(2, i) <<" queries." << std::endl;
     }
 
     return 0;
