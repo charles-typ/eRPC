@@ -145,7 +145,7 @@ namespace pc
         {
           size = 0;
           rehash_multiple = 2;
-          max_load_factor = 2;
+          max_load_factor = 200;
           capacity = 10000000;
           //capacity = 1000;
           lists = std::vector<list::List<Node *>>(capacity);
