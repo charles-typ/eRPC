@@ -146,8 +146,8 @@ namespace pc
           size = 0;
           rehash_multiple = 2;
           max_load_factor = 2;
-          // capacity = 1000000;
-          capacity = 1000;
+          capacity = 10000000;
+          //capacity = 1000;
           lists = std::vector<list::List<Node *>>(capacity);
           real_lists = std::vector<HashTableList>(capacity);
         }
