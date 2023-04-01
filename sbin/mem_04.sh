@@ -1,6 +1,6 @@
 #!/bin/bash
 sudo modprobe -a ib_uverbs mlx5_core mlx5_ib
-ip addr add 10.10.10.223/32 dev ens11np0
+ip addr add 10.10.10.224/32 dev ens11np0
 ifconfig ens11np0 mtu 9000
 ifconfig ens11np0 up
 
