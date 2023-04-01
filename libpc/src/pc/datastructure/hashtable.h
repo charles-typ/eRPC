@@ -20,6 +20,7 @@ namespace pc
       typedef uint64_t key_type;
 
 #define DEFAULT_VALUE_LEN 8
+#define PADDING_LENGTH 256 - 8 - 8
       class Node
       {
         friend class HashTable;
@@ -27,6 +28,7 @@ namespace pc
 
         key_type key;
         char value[DEFAULT_VALUE_LEN];
+        char padding[PADDING_LENGTH];
 
       public:
         Node *next;
