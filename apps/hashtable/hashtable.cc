@@ -188,6 +188,7 @@ void server_func(erpc::Nexus *nexus) {
     }
   }
   LOG(log_level::info) << "insert all keys";
+  c.ht.print_statistics();
 
   rpc.set_pre_resp_msgbuf_size(FLAGS_resp_size);
   c.rpc_ = &rpc;

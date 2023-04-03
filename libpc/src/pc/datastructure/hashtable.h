@@ -328,7 +328,7 @@ namespace pc
               total_nodes += 1;
             }
           }
-          std::cout << "Hash table with " << total_buckets << " buckets and " << total_nodes << " nodes, averaging " << total_nodes / total_buckets << " nodes per bucket" << std::endl;
+          std::cout << "Hash table with " << total_buckets << " buckets and " << total_nodes << " nodes, with a total size of " << total_nodes * 256 << " averaging " << total_nodes / total_buckets << " nodes per bucket" << std::endl;
         }
       };
 
