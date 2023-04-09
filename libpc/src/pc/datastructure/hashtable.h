@@ -216,7 +216,8 @@ namespace pc
           if (itr != end())
           {
             memcpy((*itr.itr)->value, pr.second, strlen(pr.second));
-            return itr;
+            //return itr;
+            return;
           }
 
           if (capacity * max_load_factor < size)
