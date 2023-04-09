@@ -6,7 +6,7 @@
 --numa_0_ports 0
 --numa_1_ports 0
 --concurrency 1
---num_keys 500000000
+--num_keys 100000000
 --num_queries 10000000
 --data_filepath /var/data/ycsbc-key-1-blade
 --query_filepath /var/data/ycsbc-query-1-blade

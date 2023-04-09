@@ -144,9 +144,9 @@ namespace pc
         HashTable()
         {
           size = 0;
-          rehash_multiple = 2;
+          rehash_multiple = 10;
           max_load_factor = 200;
-          capacity = 10000000;
+          capacity = 500000;
           //capacity = 1000;
           lists = std::vector<list::List<Node *>>(capacity);
           real_lists = std::vector<HashTableList>(capacity);
@@ -219,8 +219,9 @@ namespace pc
             return itr;
           }
 
-          if (capacity * max_load_factor == size)
+          if (capacity * max_load_factor < size)
           {
+	    std::cout << "Rehashing: " << capacity * max_load_factor << " " << size << std::endl;
             rehash();
           }
 
