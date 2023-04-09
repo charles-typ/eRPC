@@ -210,7 +210,7 @@ namespace pc
           return Iterator(&this->lists, capacity, NULL);
         }
 
-        Iterator insert(std::pair<key_type, const char *> pr)
+        void insert(std::pair<key_type, const char *> pr)
         {
           auto itr = find(pr.first, false);
           if (itr != end())
@@ -230,7 +230,8 @@ namespace pc
           // std::cout << "Inserting key: " << node->key << " into bucket: " << hash(node->key) << std::endl;
           size++;
 
-          return Iterator(&this->lists, hash(node->key), this->lists[hash(node->key)].find(node));
+          //return Iterator(&this->lists, hash(node->key), this->lists[hash(node->key)].find(node));
+          return;
         }
 
         Iterator find(key_type key, bool verbose = false)
