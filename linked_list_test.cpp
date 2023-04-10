@@ -1,8 +1,10 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <thread>
 #define num_lists 500000
 #define list_length 200
+#define num_threads 32
 
 using namespace std;
 
@@ -12,21 +14,12 @@ struct node {
   struct node* next;
   char padding[256 - 8 - 8 - 8];
 };
+vector<struct node*> start;
+vector<struct node*> cur;
+vector<struct node*> prev_node;
+vector<vector<uint64_t>> result;
 
-int main() {
-  vector<struct node*> start(num_lists);
-  vector<struct node*> cur(num_lists);
-  vector<struct node*> prev(num_lists);
-  int j = 0;
-  for (; j < num_lists; j++) {
-    start[j] = new node;
-    prev[j] = start[j];
-    for (int i = 0; i < list_length; i++) {
-      cur[j] = new node;
-      prev[j]->next = cur[j];
-      prev[j] = cur[j];
-    }
-  }
+void func(int thread_id) {
   for (int j = 0; j < num_lists; j++) {
     uint64_t total_result = 0;
     uint64_t total_time = 0;
@@ -43,9 +36,40 @@ int main() {
           std::chrono::duration_cast<std::chrono::nanoseconds>(end_time -
                                                                start_time)
               .count());
-      cout << "result is: " << total_result << endl;
+      //cout << "result is: " << total_result << endl;
     }
-    cout << "Traverse time for 100 nodes: " << total_time / repeat << endl;
+    result[thread_id][j] = total_time / repeat;
+  }
+}
+
+int main() {
+	start.reserve(num_lists);
+	cur.reserve(num_lists);
+	prev_node.reserve(num_lists);
+  int j = 0;
+  for (; j < num_lists; j++) {
+    start[j] = new node;
+    prev_node[j] = start[j];
+    for (int i = 0; i < list_length; i++) {
+      cur[j] = new node;
+      prev_node[j]->next = cur[j];
+      prev_node[j] = cur[j];
+    }
+  }
+  vector<thread> thread_vec;
+  result.reserve(num_threads);
+  for(int i = 0; i < num_threads; i++) {
+	result[i].reserve(num_lists);
+	std::thread t(func, i);
+	thread_vec.push_back(std::move(t));
+  }
+  for(auto &t: thread_vec) {
+	t.join();
+  }
+  for(int i = 0; i < num_threads; i++) {
+  	for (int j = 0; j < num_lists; j++) {
+		cout << "Thread[" << i << "] List[" << j << "]: " << result[i][j] << " nanoseconds" << std::endl;
+	}
   }
 
   return 0;
