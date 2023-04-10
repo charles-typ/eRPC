@@ -67,7 +67,7 @@ int main()
             auto start_time = std::chrono::high_resolution_clock::now();
         	tree.aggregate_time_stat(parser.all_keys[0], query[i], result);
             auto end_time = std::chrono::high_resolution_clock::now();
-            total_time+= static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time-start_time).count());
+            total_time += static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time-start_time).count());
 	    }
         std::cout << "Takes " <<  total_time / repeat << " nanoseconds to aggregate "<< start * std::pow(2, i) <<" queries." << std::endl;
     }

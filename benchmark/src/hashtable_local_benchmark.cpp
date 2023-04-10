@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         pc::datastructure::hashtable::HashTable ht;
         RpcParse parser;
         std::ifstream data_stream(std::string("/var/data/ycsbc-key-1-blade"));
-        uint64_t num_keys = 500000000;
+        uint64_t num_keys = 100000000;
         //auto start = get_time();
         parser.read_all_keys(data_stream, num_keys);
         //auto end_1 = get_time();
@@ -73,11 +73,17 @@ int main(int argc, char *argv[])
         //auto end_4 = get_time();
         //std::cout << "Takes " << (end_4 - end_3) / 1000 / 1000 / 1000 << " seconds to load queries " << std::endl;
         //PinToCore(0);
+        uint64_t total_time = 0;
+
         for (uint64_t i = 0; i < num_queries; i++)
         {
+            auto start_time = std::chrono::high_resolution_clock::now();
             auto result = ht.find(parser.all_query[i].key);
+            auto end_time = std::chrono::high_resolution_clock::now();
             (void)result;
+            total_time += static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time-start_time).count());
         }
+        std::cout << "Takes " <<  total_time / num_queries << " nanoseconds on each query in average " << std::endl;
         //auto end_5 = get_time();
         //std::cout << "Takes " << (end_5 - end_4) << " nanoseconds to execute queries " << std::endl;
     }
