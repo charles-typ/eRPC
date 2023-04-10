@@ -1,5 +1,8 @@
 #include <chrono>
 #include <iostream>
+#include <vector>
+#define num_lists 500000
+#define list_length 200
 
 using namespace std;
 
@@ -7,20 +10,18 @@ struct node {
   uint64_t key;
   uint64_t value;
   struct node* next;
-  char padding[4096 - 8 - 8 - 8];
+  char padding[256 - 8 - 8 - 8];
 };
 
 int main() {
-  int num_lists = 500000;
-  int list_length = 100;
-  struct node* start[num_lists];
-  struct node* cur[num_lists];
-  struct node* prev[num_lists];
-  for (int j = 0; j < num_lists; j++) {
-	cout << j << endl;
+  vector<struct node*> start(num_lists);
+  vector<struct node*> cur(num_lists);
+  vector<struct node*> prev(num_lists);
+  int j = 0;
+  for (; j < num_lists; j++) {
     start[j] = new node;
     prev[j] = start[j];
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < list_length; i++) {
       cur[j] = new node;
       prev[j]->next = cur[j];
       prev[j] = cur[j];
@@ -44,7 +45,7 @@ int main() {
               .count());
       cout << "result is: " << total_result << endl;
     }
-  	cout << "Traverse time for 100 nodes: " << total_time / repeat << endl;
+    cout << "Traverse time for 100 nodes: " << total_time / repeat << endl;
   }
 
   return 0;
