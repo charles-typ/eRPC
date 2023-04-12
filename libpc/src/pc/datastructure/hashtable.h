@@ -213,16 +213,16 @@ namespace pc
 
         void insert(std::pair<key_type, const char *> pr)
         {
-          auto start_time_0 = std::chrono::high_resolution_clock::now();
-          auto itr = find(pr.first, false);
-          auto end_time_0 = std::chrono::high_resolution_clock::now();
-          std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_0-start_time_0).count()) << " nanoseconds find location" << std::endl;
-          if (itr != end())
-          {
-            memcpy((*itr.itr)->value, pr.second, strlen(pr.second));
-            //return itr;
-            return;
-          }
+          //auto start_time_0 = std::chrono::high_resolution_clock::now();
+          //auto itr = find(pr.first, false);
+          //auto end_time_0 = std::chrono::high_resolution_clock::now();
+          //std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_0-start_time_0).count()) << " nanoseconds find location" << std::endl;
+          //if (itr != end())
+          //{
+          //  memcpy((*itr.itr)->value, pr.second, strlen(pr.second));
+          //  //return itr;
+          //  return;
+          //}
 
           if (capacity * max_load_factor < size)
           {
