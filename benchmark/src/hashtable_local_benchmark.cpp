@@ -53,14 +53,18 @@ int main(int argc, char *argv[])
         std::ifstream data_stream(std::string("/var/data/ycsbc-key-1-blade"));
         uint64_t num_keys = 100000000;
         //auto start = get_time();
+        auto start_time_0 = std::chrono::high_resolution_clock::now();
         parser.read_all_keys(data_stream, num_keys);
+        auto end_time_1 = std::chrono::high_resolution_clock::now();
         //auto end_1 = get_time();
-        //std::cout << "Takes " << (end_1 - start) / 1000 / 1000 / 1000 << " seconds to read keys to memory" << std::endl;
+        std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_1-start_time_0).count())/ 1000 / 1000 / 1000 << " seconds to read keys to memory" << std::endl;
         for (uint64_t i = 0; i < num_keys; ++i)
         {
             std::string value = gen_random(7);
             ht.insert(std::make_pair(parser.all_keys[i], value.c_str()));
         }
+        auto end_time_2 = std::chrono::high_resolution_clock::now();
+        std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_2 - end_time_1).count())/ num_keys << " nanoseconds on average to insert a key" << std::endl;
         //auto end_2 = get_time();
         //std::cout << "Takes " << (end_2 - end_1) / 1000 / 1000 / 1000 << " seconds to insert to Hashtable " << std::endl;
 
@@ -70,6 +74,8 @@ int main(int argc, char *argv[])
         uint64_t num_queries = 10000000;
         //auto end_3 = get_time();
         parser.read_all_query(query_stream, num_queries);
+        auto end_time_3 = std::chrono::high_resolution_clock::now();
+        std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_3 - end_time_2).count())/ 1000 / 1000 / 1000 << " seconds to read all queries" << std::endl;
         //auto end_4 = get_time();
         //std::cout << "Takes " << (end_4 - end_3) / 1000 / 1000 / 1000 << " seconds to load queries " << std::endl;
         //PinToCore(0);
