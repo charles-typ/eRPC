@@ -244,24 +244,27 @@ namespace pc
 
         Iterator find(key_type key, bool verbose = false)
         {
-          // std::cout << "Finding key: " << key << " hash bucket is: " << hash(key) << std::endl;
+          (void)verbose;
+          //std::cout << "Finding key: " << key << " hash bucket is: " << hash(key) << std::endl;
+          int count = 0;
           for (auto itr = lists[hash(key)].begin(); itr != lists[hash(key)].end(); ++itr)
           {
             Node *node = *itr;
             if (node->key == key)
             {
-              if (verbose)
-              {
-                std::cout << "Found" << std::endl;
-              }
+              //if (verbose)
+              //{
+                std::cout << "Found key at length: "  << count << std::endl;
+              //}
               return Iterator(&this->lists, hash(key), itr);
             }
+            count++;
           }
 
-          if (verbose)
-          {
+          //if (verbose)
+          //{
             std::cout << "Not Found" << std::endl;
-          }
+          //}
           return end();
         }
 
