@@ -263,7 +263,7 @@ namespace pc
 
           //if (verbose)
           //{
-            std::cout << "Not Found" << std::endl;
+            std::cout << "Not Found " << count << std::endl;
           //}
           return end();
         }
