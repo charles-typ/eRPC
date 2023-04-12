@@ -97,8 +97,9 @@ int main(int argc, char *argv[]) {
 
     uint64_t total_value = 0;
     for (uint64_t i = 0; i < num_queries; i++) {
+      auto key_to_find = parser.all_query[i].key;
       auto start_time = std::chrono::high_resolution_clock::now();
-      auto result = ht.find(parser.all_query[i].key);
+      auto result = ht.find(key_to_find);
       total_value += *(static_cast<uint64_t *>(result.get_value()));
       auto end_time = std::chrono::high_resolution_clock::now();
       total_time += static_cast<uint64_t>(
