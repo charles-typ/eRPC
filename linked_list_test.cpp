@@ -33,7 +33,7 @@ void func(int thread_id) {
         total_result += search->value;
         search = search->next;
       }
-	  std::cout << "Traverse length = " << count << std::endl;
+	  //std::cout << "Traverse length = " << count << std::endl;
       auto end_time = std::chrono::high_resolution_clock::now();
       total_time += static_cast<uint64_t>(
           std::chrono::duration_cast<std::chrono::nanoseconds>(end_time -
