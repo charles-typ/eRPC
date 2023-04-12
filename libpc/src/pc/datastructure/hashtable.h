@@ -247,7 +247,7 @@ namespace pc
           (void)verbose;
           //std::cout << "Finding key: " << key << " hash bucket is: " << hash(key) << std::endl;
           int count = 0;
-          auto start_time_0 = std::chrono::high_resolution_clock::now();
+          //auto start_time_0 = std::chrono::high_resolution_clock::now();
           for (auto itr = lists[hash(key)].begin(); itr != lists[hash(key)].end(); ++itr)
           {
             Node *node = *itr;
@@ -255,7 +255,7 @@ namespace pc
             {
               //if (verbose)
               //{
-                std::cout << "Found key at length: "  << count << std::endl;
+                //std::cout << "Found key at length: "  << count << std::endl;
               //}
               return Iterator(&this->lists, hash(key), itr);
             }
@@ -264,8 +264,8 @@ namespace pc
 
           //if (verbose)
           //{
-          auto end_time_0 = std::chrono::high_resolution_clock::now();
-          std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_0-start_time_0).count()) << " nanoseconds to traverse " << count << " nodes" << std::endl;
+          //auto end_time_0 = std::chrono::high_resolution_clock::now();
+          //std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_0-start_time_0).count()) << " nanoseconds to traverse " << count << " nodes" << std::endl;
           //}
           return end();
         }
