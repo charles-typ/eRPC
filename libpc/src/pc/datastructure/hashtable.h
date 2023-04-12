@@ -235,8 +235,8 @@ namespace pc
           real_lists[hash(node->key)].push_back(node);
           // std::cout << "Inserting key: " << node->key << " into bucket: " << hash(node->key) << std::endl;
           size++;
-          auto end_time_1 = std::chrono::high_resolution_clock::now();
-          std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_1-end_time_0).count()) << " nanoseconds to insert" << std::endl;
+          //auto end_time_1 = std::chrono::high_resolution_clock::now();
+          //std::cout << "Takes " << static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time_1-end_time_0).count()) << " nanoseconds to insert" << std::endl;
 
           //return Iterator(&this->lists, hash(node->key), this->lists[hash(node->key)].find(node));
           return;
