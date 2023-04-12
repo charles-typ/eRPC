@@ -18,19 +18,20 @@ vector<struct node*> start;
 vector<struct node*> cur;
 vector<struct node*> prev_node;
 vector<vector<uint64_t>> result;
+vector<vector<uint64_t>> total_result;
 
 void func(int thread_id) {
+    int repeat = 20;
+	for (int i = 0; i < repeat; i++) {
   for (int j = 0; j < num_lists; j++) {
-    uint64_t total_result = 0;
+    //uint64_t total_result = 0;
     uint64_t total_time = 0;
-    int repeat = 1;
-    for (int i = 0; i < repeat; i++) {
       struct node* search = start[j];
       auto start_time = std::chrono::high_resolution_clock::now();
 	  int count = 0;
-      while (search->next != NULL) {
+      while (search->next != NULL && search->key != 100) {
 		count++;
-        total_result += search->value;
+        total_result[thread_id][j] += search->value;
         search = search->next;
       }
 	  //std::cout << "Traverse length = " << count << std::endl;
@@ -40,8 +41,8 @@ void func(int thread_id) {
                                                                start_time)
               .count());
       //cout << "result is: " << total_result << endl;
-    }
-    result[thread_id][j] = total_time / repeat;
+    result[thread_id][j] = total_time;
+  }
   }
 }
 
@@ -55,14 +56,18 @@ int main() {
     prev_node[j] = start[j];
     for (int i = 0; i < list_length; i++) {
       cur[j] = new node;
+      cur[j]->key = i;
+      cur[j]->value = 1;
       prev_node[j]->next = cur[j];
       prev_node[j] = cur[j];
     }
   }
   vector<thread> thread_vec;
   result.reserve(num_threads);
+  total_result.reserve(num_threads);
   for(int i = 0; i < num_threads; i++) {
 	result[i].reserve(num_lists);
+	total_result[i].reserve(num_lists);
 	std::thread t(func, i);
 	thread_vec.push_back(std::move(t));
   }
@@ -72,6 +77,7 @@ int main() {
   for(int i = 0; i < num_threads; i++) {
   	for (int j = 0; j < num_lists; j++) {
 		cout << "Thread[" << i << "] List[" << j << "]: " << result[i][j] << " nanoseconds" << std::endl;
+		cout << "result is: " << total_result[i][j] << endl;
 	}
   }
 

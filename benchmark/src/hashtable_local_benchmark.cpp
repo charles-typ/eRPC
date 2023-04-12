@@ -81,15 +81,17 @@ int main(int argc, char *argv[])
         //PinToCore(0);
         uint64_t total_time = 0;
 
+	uint64_t total_value = 0;
         for (uint64_t i = 0; i < num_queries; i++)
         {
             auto start_time = std::chrono::high_resolution_clock::now();
             auto result = ht.find(parser.all_query[i].key);
+	    total_value += *(static_cast<uint64_t*>(result.get_value()));
             auto end_time = std::chrono::high_resolution_clock::now();
-            (void)result;
             total_time += static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time-start_time).count());
         }
         std::cout << "Takes " <<  total_time / num_queries << " nanoseconds on each query in average " << std::endl;
+	std::cout << "The result is " << total_value << std::endl;
         //auto end_5 = get_time();
         //std::cout << "Takes " << (end_5 - end_4) << " nanoseconds to execute queries " << std::endl;
     }

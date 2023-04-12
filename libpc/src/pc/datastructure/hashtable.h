@@ -21,7 +21,7 @@ namespace pc
       typedef uint64_t key_type;
 
 #define DEFAULT_VALUE_LEN 8
-#define PADDING_LENGTH 256 - 8 - 8
+#define PADDING_LENGTH 256 - 8 - 8 - 8 - 8
       class Node
       {
         friend class HashTable;
