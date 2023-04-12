@@ -4,7 +4,7 @@
 #include <thread>
 #define num_lists 500000
 #define list_length 200
-#define num_threads 24
+#define num_threads 1
 
 using namespace std;
 
@@ -27,10 +27,13 @@ void func(int thread_id) {
     int repeat = 10;
     for (int i = 0; i < repeat; i++) {
       auto start_time = std::chrono::high_resolution_clock::now();
+	  int count = 0;
       while (search->next != NULL) {
+		count++;
         total_result += search->value;
         search = search->next;
       }
+	  std::cout << "Traverse length = " << count << std::endl;
       auto end_time = std::chrono::high_resolution_clock::now();
       total_time += static_cast<uint64_t>(
           std::chrono::duration_cast<std::chrono::nanoseconds>(end_time -
