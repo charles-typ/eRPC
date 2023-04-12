@@ -4,7 +4,7 @@
 #include <thread>
 #define num_lists 500000
 #define list_length 200
-#define num_threads 32
+#define num_threads 24
 
 using namespace std;
 
