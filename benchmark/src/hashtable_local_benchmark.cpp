@@ -1,6 +1,9 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
+#include <algorithm>
+
 
 #include "benchmark_util.h"
 #include "pc/datastructure/hashtable.h"
@@ -89,11 +92,12 @@ int main(int argc, char *argv[]) {
                          end_time_3 - end_time_2)
                          .count()) /
                      1000 / 1000 / 1000
-              << " seconds to read all queries" << std::endl;
+              << " seconds to read all queries: " << parser.all_query.size() << std::endl;
     // auto end_4 = get_time();
     // std::cout << "Takes " << (end_4 - end_3) / 1000 / 1000 / 1000 << "
     // seconds to load queries " << std::endl; PinToCore(0);
     uint64_t total_time = 0;
+    std::vector<uint64_t> lat_vec;
 
     uint64_t total_value = 0;
     for (uint64_t i = 0; i < num_queries; i++) {
@@ -106,9 +110,16 @@ int main(int argc, char *argv[]) {
           std::chrono::duration_cast<std::chrono::nanoseconds>(end_time -
                                                                start_time)
               .count());
+      lat_vec.push_back(static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(end_time -
+                                                               start_time)
+              .count()));
     }
+    uint64_t max = *max_element(lat_vec.begin(), lat_vec.end());
+    uint64_t min = *min_element(lat_vec.begin(), lat_vec.end());
     std::cout << "Takes " << total_time / num_queries
               << " nanoseconds on each query in average " << std::endl;
+    std::cout << "Max is: " << max << std::endl;
+    std::cout << "Min is: " << min << std::endl;
     std::cout << "The result is " << total_value << std::endl;
     // auto end_5 = get_time();
     // std::cout << "Takes " << (end_5 - end_4) << " nanoseconds to execute
