@@ -25,9 +25,9 @@ void func(int thread_id) {
   for (int i = 0; i < repeat; i++) {
     for (int j = 0; j < num_lists; j++) {
       // uint64_t total_result = 0;
+      auto start_time = std::chrono::high_resolution_clock::now();
       uint64_t total_time = 0;
       struct node* search = start[j];
-      auto start_time = std::chrono::high_resolution_clock::now();
       int count = 0;
       while (search->next != NULL && search->key != 100) {
         count++;
