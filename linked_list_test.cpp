@@ -135,9 +135,9 @@ int main() {
   uint64_t num_queries = 10000000;
   read_all_query(query_stream, num_queries);
   std::cout << "query loaded: " << all_query.size() << std::endl;
-  start.reserve(num_lists);
-  cur.reserve(num_lists);
-  prev_node.reserve(num_lists);
+  start.resize(num_lists);
+  cur.resize(num_lists);
+  prev_node.resize(num_lists);
   int j = 0;
   for (; j < num_lists; j++) {
     start[j] = new node;
@@ -164,10 +164,10 @@ int main() {
   //   }
   // }
   vector<thread> thread_vec;
-  result.reserve(num_threads);
-  total_result.reserve(num_threads);
+  result.resize(num_threads);
+  total_result.resize(num_threads);
   for (int i = 0; i < num_threads; i++) {
-    result[i].reserve(all_query.size());
+    result[i].resize(all_query.size());
     std::thread t(func, i);
     thread_vec.push_back(std::move(t));
   }
