@@ -216,17 +216,33 @@ class HashTable {
     // std::cout << "Finding key: " << key << " hash bucket is: " << hash(key)
     // << std::endl;
     int count = 0;
-    // auto start_time_0 = std::chrono::high_resolution_clock::now();
-    for (auto itr = lists[hash(key)].begin(); itr != lists[hash(key)].end();
-         ++itr) {
-      Node *node = *itr;
-      if (node->key == key) {
-        if (verbose) {
-          std::cout << "Found key at length: " << count << std::endl;
+    if (verbose) {
+      auto start_time_0 = std::chrono::high_resolution_clock::now();
+      for (auto itr = lists[hash(key)].begin(); itr != lists[hash(key)].end();
+           ++itr) {
+        Node *node = *itr;
+        if (node->key == key) {
+          auto end_time_0 = std::chrono::high_resolution_clock::now();
+          std::cout << "Takes "
+                    << static_cast<uint64_t>(
+                           std::chrono::duration_cast<std::chrono::nanoseconds>(
+                               end_time_0 - start_time_0)
+                               .count())
+                    << " nanoseconds to traverse " << count << " nodes"
+                    << std::endl;
+          return Iterator(&this->lists, hash(key), itr);
         }
-        return Iterator(&this->lists, hash(key), itr);
+        count++;
       }
-      count++;
+    } else {
+      for (auto itr = lists[hash(key)].begin(); itr != lists[hash(key)].end();
+           ++itr) {
+        Node *node = *itr;
+        if (node->key == key) {
+          return Iterator(&this->lists, hash(key), itr);
+        }
+        count++;
+      }
     }
 
     // if (verbose)
