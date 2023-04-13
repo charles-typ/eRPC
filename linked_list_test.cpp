@@ -132,9 +132,9 @@ int main() {
   read_all_keys(data_stream, 100000000);
   std::cout << "key loaded: " << all_keys.size() << std::endl;
   std::ifstream query_stream(std::string("/var/data/ycsbc-query-1-blade"));
-  std::cout << "query loaded: " << all_query.size() << std::endl;
   uint64_t num_queries = 10000000;
   read_all_query(query_stream, num_queries);
+  std::cout << "query loaded: " << all_query.size() << std::endl;
   start.reserve(num_lists);
   cur.reserve(num_lists);
   prev_node.reserve(num_lists);
