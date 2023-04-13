@@ -74,13 +74,16 @@ int main() {
   for (auto& t : thread_vec) {
     t.join();
   }
+  uint64_t average_latency = 0;
   for (int i = 0; i < num_threads; i++) {
     for (int j = 0; j < num_lists; j++) {
-      cout << "Thread[" << i << "] List[" << j << "]: " << result[i][j]
-           << " nanoseconds" << std::endl;
-      cout << "result is: " << total_result[i][j] << endl;
+      //cout << "Thread[" << i << "] List[" << j << "]: " << result[i][j]
+      //     << " nanoseconds" << std::endl;
+	  average_latency += result[i][j];
+      //cout << "result is: " << total_result[i][j] << endl;
     }
   }
+  cout << "Average latency is: " << average_latency / num_threads / num_lists << endl;
 
   return 0;
 }
