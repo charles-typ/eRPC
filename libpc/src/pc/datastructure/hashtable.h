@@ -213,7 +213,6 @@ class HashTable {
   }
 
   Iterator find(key_type key, bool verbose = false) {
-    (void)verbose;
     // std::cout << "Finding key: " << key << " hash bucket is: " << hash(key)
     // << std::endl;
     int count = 0;
@@ -222,10 +221,9 @@ class HashTable {
          ++itr) {
       Node *node = *itr;
       if (node->key == key) {
-        // if (verbose)
-        //{
-        // std::cout << "Found key at length: "  << count << std::endl;
-        //}
+        if (verbose) {
+          std::cout << "Found key at length: " << count << std::endl;
+        }
         return Iterator(&this->lists, hash(key), itr);
       }
       count++;
