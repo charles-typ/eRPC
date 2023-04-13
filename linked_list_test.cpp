@@ -1,18 +1,19 @@
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <cassert>
 #include <chrono>
-#include <iostream>
-#include <thread>
-#include <vector>
+#include <climits>
 #include <fstream>
+#include <iostream>
+#include <istream>
+#include <sstream>
 #include <streambuf>
 #include <string>
-#include <sstream>
-#include <istream>
-#include <climits>
-#include <cassert>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
+#include <thread>
+#include <vector>
 #define num_lists 500000
 #define list_length 200
 #define num_threads 1
@@ -29,7 +30,7 @@ vector<struct node*> start;
 vector<struct node*> cur;
 vector<struct node*> prev_node;
 vector<vector<uint64_t>> result;
-vector<vector<uint64_t>> total_result;
+vector<uint64_t> total_result;
 
 struct query {
   std::string query_type;
@@ -44,15 +45,16 @@ vector<query> all_query;
 vector<void*> all_buckets;
 
 void func(int thread_id) {
+  std::cout << "Starting function at thread_id: " << thread_id << std::endl;
   for (int j = 0; j < all_query.size(); j++) {
     // uint64_t total_result = 0;
     auto start_time = std::chrono::high_resolution_clock::now();
     uint64_t total_time = 0;
-    struct node* search = start[j%num_lists];
+    struct node* search = start[j % num_lists];
     int count = 0;
     while (search->next != NULL && search->key != all_query[j].key) {
       count++;
-      total_result[thread_id][j] += search->value;
+      total_result[thread_id] += search->value;
       search = search->next;
     }
     // std::cout << "Traverse length = " << count << std::endl;
@@ -64,6 +66,7 @@ void func(int thread_id) {
     // cout << "result is: " << total_result << endl;
     result[thread_id][j] = total_time;
   }
+  std::cout << "Starting function at thread_id: " << thread_id << std::endl;
 }
 
 void read_all_query(std::ifstream& input_file, double total_query,
@@ -127,26 +130,28 @@ void read_all_keys(std::ifstream& input_file, double total_keys,
 int main() {
   std::ifstream data_stream(std::string("/var/data/ycsbc-key-1-blade"));
   read_all_keys(data_stream, 100000000);
+  std::cout << "key loaded: " << all_keys.size() << std::endl;
   std::ifstream query_stream(std::string("/var/data/ycsbc-query-1-blade"));
+  std::cout << "query loaded: " << all_query.size() << std::endl;
   uint64_t num_queries = 10000000;
   read_all_query(query_stream, num_queries);
   start.reserve(num_lists);
   cur.reserve(num_lists);
   prev_node.reserve(num_lists);
   int j = 0;
-  size_t capacity = 500000;
   for (; j < num_lists; j++) {
     start[j] = new node;
     prev_node[j] = start[j];
   }
   for (j = 0; j < all_keys.size(); j++) {
-    size_t list_id = all_keys[j] % capacity;
+    size_t list_id = all_keys[j] % num_lists;
     cur[list_id] = new node;
     cur[list_id]->key = all_keys[j];
     cur[list_id]->value = 1;
     prev_node[list_id]->next = cur[list_id];
     prev_node[list_id] = cur[list_id];
   }
+  std::cout << "keys are inserted" << std::endl;
   // for (; j < num_lists; j++) {
   //   start[j] = new node;
   //   prev_node[j] = start[j];
@@ -162,8 +167,7 @@ int main() {
   result.reserve(num_threads);
   total_result.reserve(num_threads);
   for (int i = 0; i < num_threads; i++) {
-    result[i].reserve(num_lists);
-    total_result[i].reserve(num_lists);
+    result[i].reserve(all_query.size());
     std::thread t(func, i);
     thread_vec.push_back(std::move(t));
   }
@@ -172,14 +176,14 @@ int main() {
   }
   uint64_t average_latency = 0;
   for (int i = 0; i < num_threads; i++) {
-    for (int j = 0; j < num_lists; j++) {
+    for (int j = 0; j < all_query.size(); j++) {
       // cout << "Thread[" << i << "] List[" << j << "]: " << result[i][j]
       //      << " nanoseconds" << std::endl;
       average_latency += result[i][j];
-      // cout << "result is: " << total_result[i][j] << endl;
     }
+    cout << "result is: " << total_result[i] << endl;
   }
-  cout << "Average latency is: " << average_latency / num_threads / num_lists
+  cout << "Average latency is: " << average_latency / num_threads / all_query.size()
        << endl;
 
   return 0;
