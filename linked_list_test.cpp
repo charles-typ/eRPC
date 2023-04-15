@@ -14,9 +14,10 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <random>
 const uint64_t num_lists = 500000;
 #define list_length 200
-#define num_threads 48
+#define num_threads 50
 
 using namespace std;
 
@@ -59,28 +60,31 @@ static int PinToCore(size_t core_id) {
 }
 
 void func(int thread_id) {
-  PinToCore(thread_id % 24);
-  std::cout << "Starting function at thread_id: " << thread_id << std::endl;
+  PinToCore(thread_id % 72);
+  std::random_device rd; // obtain a random number from hardware
+  std::mt19937 gen(rd()); // seed the generator
+  std::uniform_int_distribution<> distr(0, all_query.size()); // define the range
   for (uint64_t j = 0; j < all_query.size(); j++) {
+    auto key_to_find = all_query[distr(gen)].key;
     // uint64_t total_result = 0;
-    //auto start_time = std::chrono::high_resolution_clock::now();
+    auto start_time = std::chrono::high_resolution_clock::now();
     uint64_t total_time = 0;
-    struct node* search = start[all_query[j].key % num_lists];
+    struct node* search = start[key_to_find % num_lists];
     int count = 0;
-    while (search->next != NULL && search->key != all_query[j].key) {
+    while (search->next != NULL && search->key != key_to_find) {
       //std::cout << "The current key is: " << search->key << " but the target key is: " << all_query[j].key << std::endl;
       count++;
       total_result[thread_id] += search->value;
       search = search->next;
     }
     // std::cout << "Traverse length = " << count << std::endl;
-    //auto end_time = std::chrono::high_resolution_clock::now();
-    //total_time += static_cast<uint64_t>(
-    //    std::chrono::duration_cast<std::chrono::nanoseconds>(end_time -
-    //                                                         start_time)
-    //        .count());
+    auto end_time = std::chrono::high_resolution_clock::now();
+    total_time += static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(end_time -
+                                                             start_time)
+            .count());
     //cout << "Time is: " << total_time <<  " for traverse length: " << count << endl;
-    //result[thread_id][j] = total_time;
+    result[thread_id][j] = total_time;
   }
   std::cout << "Stopping function at thread_id: " << thread_id << std::endl;
 }
@@ -145,10 +149,10 @@ void read_all_keys(std::ifstream& input_file, double total_keys,
 
 int main() {
   PinToCore(0);
-  std::ifstream data_stream(std::string("/var/data/ycsbc-key-1-blade"));
+  std::ifstream data_stream(std::string("/media/pmem0/yupeng/ycsbc-key-1-blade"));
   read_all_keys(data_stream, 100000000);
   std::cout << "key loaded: " << all_keys.size() << std::endl;
-  std::ifstream query_stream(std::string("/var/data/ycsbc-query-1-blade"));
+  std::ifstream query_stream(std::string("/media/pmem0/yupeng/ycsbc-query-1-blade"));
   uint64_t num_queries = 10000000;
   read_all_query(query_stream, num_queries);
   std::cout << "query loaded: " << all_query.size() << std::endl;
@@ -203,7 +207,7 @@ int main() {
     for (int j = 0; j < all_query.size(); j++) {
     //  // cout << "Thread[" << i << "] List[" << j << "]: " << result[i][j]
     //  //      << " nanoseconds" << std::endl;
-    //  average_latency += result[i][j];
+      average_latency += result[i][j];
     }
     cout << "result is: " << total_result[i] << endl;
   }
